@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.criticalblue.android.astropix;
+package com.criticalblue.android.astropiks;
 
 import java.util.Date;
 import java.util.UUID;

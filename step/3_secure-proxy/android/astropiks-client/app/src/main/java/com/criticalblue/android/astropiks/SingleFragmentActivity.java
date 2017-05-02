@@ -1,4 +1,4 @@
-package com.criticalblue.android.astropix;
+package com.criticalblue.android.astropiks;
 
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;

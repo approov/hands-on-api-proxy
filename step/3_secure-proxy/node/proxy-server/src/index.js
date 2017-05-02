@@ -37,12 +37,11 @@ if (config.approov_header  == null) {
 const approovHdr = config.approov_header;
 
 function log_req(req) {
-  console.log(`Request: ${JSON.stringify({
+  console.log(chalk.cyan(`Request: ${JSON.stringify({
     originalUrl: req.originalUrl,
-    url: req.url,
     params: req.params,
     headers: req.headers,
-  }, null, '  ')}`);
+  }, null, '  ')}`));
 }
 
 // preprocess all proxy requests
@@ -50,8 +49,9 @@ function log_req(req) {
 app.use((req, res, next) => {
   // check and delete approov token
 
+  //log_req(req);
+
   var token = req.headers[approovHdr];
-  console.log('token:', token);
   delete req.headers[approovHdr];
 
   if (!approov.isValid(token)) {

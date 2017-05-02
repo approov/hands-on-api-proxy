@@ -5,10 +5,8 @@ a proxy server to secure APIs without hiding any secrets in a mobile client.
 
 ## Get Started
 
-1. **Clone this [repository](https://github.com/approov)**.
-2. **Download the [Approov demo archive](https://www.approov.io/demo-reg.html)**.
-3. **Obtain a [NASA API key](https://api.nasa.gov/)**.
+1. **Download the [Approov demo archive](https://www.approov.io/demo-reg.html)**.
+2. **Obtain a [NASA API key](https://api.nasa.gov/)**.
+3. **See indiviudal client and server READMEs contain additional information**.
 
-See indiviudal client and server READMEs for additional information.
-
-Follow the tutorial article for specific instructions.
+**Follow the tutorial article for more complete instructions.**

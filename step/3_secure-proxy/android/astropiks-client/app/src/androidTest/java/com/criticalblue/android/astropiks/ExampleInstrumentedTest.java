@@ -1,4 +1,4 @@
-package com.criticalblue.android.astropix;
+package com.criticalblue.android.astropiks;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

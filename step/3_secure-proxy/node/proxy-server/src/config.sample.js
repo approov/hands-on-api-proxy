@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.criticalblue.android.astropix;
-
-import android.support.v4.app.Fragment;
-
-public class PhotoGalleryActivity extends SingleFragmentActivity {
-
-    @Override
-    protected Fragment createFragment() {
-        return PhotoGalleryFragment.newInstance();
-    }
-}
+module.exports = {
+  proxy_port:           /* port the proxy listens on */
+      8080,
+  nasa_host:            /* NASA API host */
+      'api.nasa.gov',
+  nasa_protocol:        /* NASA API protocol */
+      'https:',
+  approov_header:       /* Approov header name */
+      'approov',
+  approov_enforcement:  /* set true to enforce token checks */
+      true,
+};
 
 // end of file

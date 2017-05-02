@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.criticalblue.android.astropix;
+package com.criticalblue.android.astropiks;
 
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.criticalblue.android.astropix;
+package com.criticalblue.android.astropiks;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -85,7 +84,7 @@ public class PhotoRequester {
 
         String urlRequest = mContext.getString(R.string.api_url) +
                 BASE_PATH + DATE_PARAMETER + date;
-        urlRequest += API_KEY_PARAMETER + mContext.getString(R.string.api_key);
+        //urlRequest += API_KEY_PARAMETER + mContext.getString(R.string.api_key);
         final Request request = new Request.Builder().url(urlRequest).build();
         mLoadingData = true;
 

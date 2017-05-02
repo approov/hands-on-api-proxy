@@ -15,6 +15,8 @@ The tutorial presumes you will be running the client in an Android emulator, but
 7. **Ensure the corresponding proxy server is running** - see ../../../proxy-server/node/README.md.
 8. **Install and run the debug APK on an emulator or Android device**.
 
+**Follow the tutorial article for more complete instructions.**
+
 ## Dependencies
 
 | **Dependency**                                            | **Use**                                     |
