@@ -1,0 +1,10 @@
+# Text editors
+*~
+
+# possible secret files
+secrets.yaml
+secrets.xml
+secrets.js
+token-secret.txt
+
+# end of file
