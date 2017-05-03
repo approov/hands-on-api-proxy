@@ -16,6 +16,8 @@
 
 const path = require('path');
 const chalk = require('chalk');
+const foreach = require(__dirname + '/foreach');
+
 const app = require('express')();
 
 // load and check port
@@ -45,11 +47,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// process nasa api proxy routes
+// process additional api proxy routes (every module in api directory)
 
-require(__dirname + '/api/nasa').routes(app, proxyPort);
-
-// add more proxy routes here...
+foreach.fileInDir(__dirname + '/api', /\.js$/, (file) => {
+  console.log(chalk.green(`adding ${path.basename(file, '.js')} API module to proxy handlers.`));
+  require(path.join(path.dirname(file), path.basename(file, '.js'))).routes(app, proxyPort);
+});
 
 // process unhandled routes
 
