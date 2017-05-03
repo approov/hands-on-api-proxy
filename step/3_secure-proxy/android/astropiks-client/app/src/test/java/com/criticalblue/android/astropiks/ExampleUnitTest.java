@@ -1,4 +1,4 @@
-package com.criticalblue.android.astropix;
+package com.criticalblue.android.astropiks;
 
 import org.junit.Test;
 

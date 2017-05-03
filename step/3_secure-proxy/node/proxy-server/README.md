@@ -11,6 +11,8 @@ This is a simple proxy server implementation in Node as part of the Hands On API
 5. **Add and update the `src/secrets.js` file** - see src/secrets.sample.js.
 6. **Run the development server** - `npm start`.
 
+**Follow the tutorial article for more complete instructions.**
+
 ## Additional Scripts
 There are a few additional scripts in package.json which might help get started on building a more robust system. 
 1. **Run server tests** - `npm test` - just a placeholder.

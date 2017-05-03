@@ -20,9 +20,7 @@
  * THE SOFTWARE.
  */
 
-package com.criticalblue.android.astropix;
-
-import android.content.Context;
+package com.criticalblue.android.astropiks;
 
 import java.util.ArrayList;
 import java.util.List;

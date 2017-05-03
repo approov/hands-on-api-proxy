@@ -22,6 +22,6 @@
     android:id="@+id/photo_recycler_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.criticalblue.android.astropix.PhotoGalleryActivity"/>
+    tools:context="com.criticalblue.android.astropiks.PhotoGalleryActivity"/>
 
 <!-- end of file -->
