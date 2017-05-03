@@ -1,0 +1,3 @@
+<resources>
+    <string name="api_url">https://api.nasa.gov</string>
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">AstroPiks</string>
+
+    <string name="pod_missing_date">\?</string>
+    <string name="pod_missing_title">Picture of the Day</string>
+    <string name="pod_missing_desc">description missing</string>
+    <string name="pod_caption_date_fmt">dd MMMM yyyy</string>
+    <string name="pod_caption_sep">:\u0020</string>
+    <string name="pod_api_date_fmt">yyyy-MM-dd</string>
+</resources>
