@@ -51,7 +51,7 @@ app.use((req, res, next) => {
 
 foreach.fileInDir(__dirname + '/api', /\.js$/, (file) => {
   console.log(chalk.green(`adding ${path.basename(file, '.js')} API module to proxy handlers.`));
-  require(path.join(path.dirname(file), path.basename(file, '.js'))).routes(app, proxyPort);
+  require(path.join(path.dirname(file), path.basename(file, '.js'))).routes(app);
 });
 
 // process unhandled routes

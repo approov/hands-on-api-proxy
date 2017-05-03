@@ -40,13 +40,17 @@ if (secrets.nasa_api_key == null) {
 }
 const api_key = secrets.nasa_api_key;
 
+const apodHostname = 'apod.nasa.gov';
+const apodRoute = '/' + apodHostname + '/apod/image/*'
+const apodDirect = api_protocol + '//' + apodHostname + '/';
+const apodDirectRe = new RegExp(apodDirect.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
+
 /**
  * Describes NASA API route handlers.
  *
  * @param app the express app.
- * @param port the port the app will listen on.
  */
-function routes(app, port) {
+function routes(app) {
 
   // proxy a picture of the day request
 
@@ -63,6 +67,9 @@ function routes(app, port) {
     urlInfo.query.api_key = api_key;         // add nasa api key
     var nasaUrl = url.format(urlInfo);
 
+    var proxyHome = req.protocol + '://' + req.headers.host;
+    var apodProxy = proxyHome + '/' + apodHostname + '/';
+
     var nasaHdrs = req.headers;              // reuse most headers
     delete nasaHdrs['host'];
     delete nasaHdrs['accept-encoding'];
@@ -75,11 +82,31 @@ function routes(app, port) {
         res.status(500).send('Internal Server Error');
       } else {
 
+        // patch response to redirect any apod image requests through proxy
+
+        proxyBody = proxyBody.replace(apodDirectRe, apodProxy);
+        proxyRes.headers["content-length"] = proxyBody.length.toString();
+
         res.writeHead(proxyRes.statusCode, proxyRes.headers);
         res.write(proxyBody);
         res.end();
       }
     });
+  });
+
+  // proxy a picture of the day image download
+
+  app.get(apodRoute, (req, res, next) => {
+    console.log('Processing NASA apod image request', api_protocol + '/' + req.url);
+
+    // console.log('image headers:', JSON.stringify(req.headers, null, '  '));
+
+    // pipe the image request through the proxy
+
+    let proxyUrl = api_protocol + '/' + req.url;
+    let proxyReq = request(proxyUrl);
+
+    req.pipe(proxyReq).pipe(res);
   });
 }
 

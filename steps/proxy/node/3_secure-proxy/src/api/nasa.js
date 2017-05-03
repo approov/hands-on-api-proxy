@@ -44,9 +44,8 @@ const api_key = secrets.nasa_api_key;
  * Describes NASA API route handlers.
  *
  * @param app the express app.
- * @param port the port the app will listen on.
  */
-function routes(app, port) {
+function routes(app) {
 
   // proxy a picture of the day request
 
