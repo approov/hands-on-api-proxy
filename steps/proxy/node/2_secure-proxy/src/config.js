@@ -8,5 +8,5 @@ module.exports = {
     approov_header:         /* Approov header name */
         'approov',
     approov_enforcement:    /* set true to enforce token checks */
-        true,
+        false,
 };
