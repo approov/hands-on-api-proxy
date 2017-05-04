@@ -48,7 +48,6 @@ out: {
                                 `       specify proxy_home as <protocol>://<hostname>:<port>/<path>\n`));
         break out;
     }
-    console.log('protocol:', proxyUrl.protocol);
     if (proxyUrl.protocol == null) {
         proxyUrl.protocol = 'http:';
     }
@@ -90,6 +89,8 @@ out: {
     var androidResPath = '/app/src/main/res/values/';
     var androidLibPath = '/approov/';
 
+    var penPath = '../pen/';
+
     var clientDir = '';
     var clientResDir = '';
     var clientLibDir = '';
@@ -100,29 +101,9 @@ out: {
     var proxyDir = '';
     var proxySrcDir = '';
 
-    // write step 0_starting-client
+    // write step 0_direct-client
 
-    clientDir = '0_starting-client';
-    clientResDir = androidClientPath + clientDir + androidResPath;
-    clientLibDir = androidClientPath + clientDir + androidLibPath;
-
-    mkdirp.sync(clientResDir);
-    fs.writeFileSync(clientResDir + 'config.xml',
-        '<resources>\n' +
-        '    <string name=\"api_url\">' + nasaProtocol + '//' + nasaHostname + '</string>\n' +
-        '</resources>\n'
-    );
-
-    mkdirp.sync(clientResDir);
-    fs.writeFileSync(clientResDir + 'secrets.xml',
-        '<resources>\n' +
-        '    <string name=\"api_key\">' + 'NASA_API_KEY_STRING' + '</string>\n' +
-        '</resources>\n'
-    );
-
-    // write step 1_direct-client
-
-    clientDir = '1_direct-client';
+    clientDir = '0_direct-client';
     clientResDir = androidClientPath + clientDir + androidResPath;
     clientLibDir = androidClientPath + clientDir + androidLibPath;
 
@@ -140,9 +121,9 @@ out: {
         '</resources>\n'
     );
 
-    // write step 2_open-client
+    // write step 1_open-client
 
-    clientDir = '2_open-client';
+    clientDir = '1_open-client';
     clientResDir = androidClientPath + clientDir + androidResPath;
     clientLibDir = androidClientPath + clientDir + androidLibPath;
 
@@ -153,9 +134,9 @@ out: {
         '</resources>\n'
     );
 
-    // write step 3_secure-client
+    // write step 2_secure-client
 
-    clientDir = '3_secure-client';
+    clientDir = '2_secure-client';
     clientResDir = androidClientPath + clientDir + androidResPath;
     clientLibDir = androidClientPath + clientDir + androidLibPath;
 
@@ -169,34 +150,9 @@ out: {
     mkdirp.sync(clientLibDir);
     cpx.copySync(doc.approov_android_lib, clientLibDir, { clean: true });
 
-    // write step 0_starting-proxy
+    // write step 1_open-proxy
     
-    proxyDir = '0_starting-proxy';
-    proxySrcDir = nodeProxyPath + proxyDir + nodeSrcPath;
-
-    mkdirp.sync(proxySrcDir);
-    fs.writeFileSync(proxySrcDir + 'config.js',
-        'module.exports = {\n' +
-        '    proxy_port:             /* port the proxy listens on */\n' +
-        '        ' + proxyPort + ',\n' +
-        '    nasa_host:              /* NASA API host */\n' +
-        '        \'' + nasaHostname + '\',\n' +
-        '    nasa_protocol:          /* NASA API protocol */\n' +
-        '        \'' + nasaProtocol + '\',\n' +
-        '};\n'
-    );
-
-    mkdirp.sync(proxySrcDir);
-    fs.writeFileSync(proxySrcDir + 'secrets.js',
-        'module.exports = {\n' +
-        '    nasa_api_key:           /* api key received from NASA */\n' +
-        '        \'' + 'NASA_API_KEY_STRING' + '\',\n' +
-        '};\n'
-    );
-
-    // write step 2_open-proxy
-    
-    proxyDir = '2_open-proxy';
+    proxyDir = '1_open-proxy';
     proxySrcDir = nodeProxyPath + proxyDir + nodeSrcPath;
 
     mkdirp.sync(proxySrcDir);
@@ -219,9 +175,9 @@ out: {
         '};\n'
     );
 
-    // write step 3_secure-proxy
+    // write step 2_secure-proxy
     
-    proxyDir = '3_secure-proxy';
+    proxyDir = '2_secure-proxy';
     proxySrcDir = nodeProxyPath + proxyDir + nodeSrcPath;
 
     mkdirp.sync(proxySrcDir);
@@ -236,7 +192,7 @@ out: {
         '    approov_header:         /* Approov header name */\n' +
         '        \'' + 'approov' + '\',\n' +
         '    approov_enforcement:    /* set true to enforce token checks */\n' +
-        '        ' + true + ',\n' +
+        '        ' + false + ',\n' +
         '};\n'
     );
 
@@ -250,9 +206,9 @@ out: {
         '};\n'
     );
 
-    // write step 4_enhanced-proxy
+    // write step 3_enhanced-proxy
     
-    proxyDir = '4_enhanced-proxy';
+    proxyDir = '3_enhanced-proxy';
     proxySrcDir = nodeProxyPath + proxyDir + nodeSrcPath;
 
     mkdirp.sync(proxySrcDir);
@@ -267,7 +223,7 @@ out: {
         '    approov_header:         /* Approov header name */\n' +
         '        \'' + 'approov' + '\',\n' +
         '    approov_enforcement:    /* set true to enforce token checks */\n' +
-        '        ' + true + ',\n' +
+        '        ' + false + ',\n' +
         '};\n'
     );
 
@@ -281,7 +237,52 @@ out: {
         '};\n'
     );
 
-    console.log('step configuration complete');
+    // write pen/client (0_direct-client)
+
+    clientDir = 'client';
+    clientResDir = penPath + clientDir + androidResPath;
+    clientLibDir = penPath + clientDir + androidLibPath;
+
+    mkdirp.sync(clientResDir);
+    fs.writeFileSync(clientResDir + 'config.xml',
+        '<resources>\n' +
+        '    <string name=\"api_url\">' + nasaProtocol + '//' + nasaHostname + '</string>\n' +
+        '</resources>\n'
+    );
+
+    mkdirp.sync(clientResDir);
+    fs.writeFileSync(clientResDir + 'secrets.xml',
+        '<resources>\n' +
+        '    <string name=\"api_key\">' + doc.nasa_api_key + '</string>\n' +
+        '</resources>\n'
+    );
+
+    // write pen/proxy (1_open-proxy)
+    
+    proxyDir = 'proxy';
+    proxySrcDir = penPath + proxyDir + nodeSrcPath;
+
+    mkdirp.sync(proxySrcDir);
+    fs.writeFileSync(proxySrcDir + 'config.js',
+        'module.exports = {\n' +
+        '    proxy_port:             /* port the proxy listens on */\n' +
+        '        ' + proxyPort + ',\n' +
+        '    nasa_host:              /* NASA API host */\n' +
+        '        \'' + nasaHostname + '\',\n' +
+        '    nasa_protocol:          /* NASA API protocol */\n' +
+        '        \'' + nasaProtocol + '\',\n' +
+        '};\n'
+    );
+
+    mkdirp.sync(proxySrcDir);
+    fs.writeFileSync(proxySrcDir + 'secrets.js',
+        'module.exports = {\n' +
+        '    nasa_api_key:           /* api key received from NASA */\n' +
+        '        \'' + doc.nasa_api_key + '\',\n' +
+        '};\n'
+    );
+
+    console.log('-- configuration complete');
 }
 
 // end of file

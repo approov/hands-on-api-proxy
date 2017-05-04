@@ -84,6 +84,7 @@ public class PhotoRequester {
 
         String urlRequest = mContext.getString(R.string.api_url) +
                 BASE_PATH + DATE_PARAMETER + date;
+        //urlRequest += API_KEY_PARAMETER + mContext.getString(R.string.api_key);
         final Request request = new Request.Builder().url(urlRequest).build();
         mLoadingData = true;
 
