@@ -22,7 +22,6 @@ configuration and secrets.
 | --------------------------- | -------------------------------------------------------------------------- |
 | chalk                       | Colorizes console output                                                   |
 | commander                   | Handles command lines                                                      |
-| cpx                         | Provides server routing and middleware framework                           |
+| fs-extra                    | Provides extra mkdir -p and cp routines                                    |
 | js-yaml                     | Provides a yaml parser                                                     |
-| mkdirp                      | Provides mkdir -p functionality                                            |
 | url                         | Parses and formats URLs                                                    |
