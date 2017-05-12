@@ -36,7 +36,7 @@ To get started, you need to download the tutorial source code, get some keys, an
 All tutorial source code is available on github. In a terminal or command window, change to a directory where you will store the tutorial, and clone this public git repository:
 
 ```
-tutorials$ git clone git@github.com:approov/api-key-proxy.git
+tutorials$ git clone https://github.com/approov/hands-on-api-proxy.git
 ```
 
 ### 2. Register for an API key from NASA (it’s free)
@@ -111,4 +111,4 @@ The pen working directory contains copies of the  starting configurations, 0_dir
 
 Indiviudal client and server READMEs contain additional information.
 
-**Follow the tutorial article for more complete instructions and walkthrough of the cleint and proxy development!**
+**Follow the tutorial article for more complete instructions and walkthrough of the client and proxy development!**
