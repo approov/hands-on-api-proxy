@@ -59,7 +59,8 @@ freeline_project_description.json
 .classpath
 .settings/
 
-# Secrets resource file for this project
+# Secrets resource file and any certs for this project
 **/*/res/values/secrets.xml
+**/*/assets/*.pem
 
 # end of file

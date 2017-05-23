@@ -47,5 +47,7 @@ db.json
 
 #secrets
 secrets.js
+*.pem
+
 
 # end of file

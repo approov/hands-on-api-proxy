@@ -60,19 +60,6 @@ public class App extends Application {
     Picasso mDownloader = null;
 
     /**
-     * Passes any host name verification.
-     *
-     * There is some annoyances in trying to validate IP addresses instead of
-     * DNS names, so we just pass everything to keep it simple.
-     */
-    private class NoHostnameVerifier implements HostnameVerifier {
-        @Override
-        public boolean verify(final String hostname, final SSLSession session) {
-            return true;
-        }
-    };
-
-    /**
      * Adds Approov attestation token to http requests.
      */
     private class ApproovInterceptor implements Interceptor {
@@ -106,6 +93,58 @@ public class App extends Application {
         }
     }
 
+    /**
+     * Creates an SSL context useful for pinning certificates.
+     */
+    private class SSLContextPinner {
+        private SSLContext sslContext;
+        private TrustManager trustManager;
+
+        public SSLContextPinner(String pemAssetName) {
+            try {
+                KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keyStore.load(null, null);
+                InputStream certInputStream = getAssets().open(pemAssetName);
+                BufferedInputStream bis = new BufferedInputStream(certInputStream);
+                CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+                int idx = -1;
+                while (bis.available() > 0) {
+                    Certificate cert = certificateFactory.generateCertificate(bis);
+                    keyStore.setCertificateEntry("" + ++idx, cert);
+                    Log.i("App", "pinned " + idx + ": " + ((X509Certificate) cert).getSubjectDN());
+                }
+                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                trustManagerFactory.init(keyStore);
+                TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+                trustManager = trustManagers[0];
+                sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, trustManagers, null);
+            } catch(Exception e) {
+                sslContext = null;
+                trustManager = null;
+                Log.e("App", e.toString());
+            }
+        }
+
+        public SSLContext getSSLContext() { return sslContext; }
+
+        public X509TrustManager getX509TrustManager() { return (X509TrustManager) trustManager; }
+    };
+
+    /**
+     * Passes any host name verification.
+     *
+     * There appear to be some issues when verifying absolute IP
+     * addresses when using subjectAltNames in certs, so we
+     * just pass everything for demonstration purposes.
+     */
+    private class NoHostnameVerifier implements HostnameVerifier {
+        @Override
+        public boolean verify(final String hostname, final SSLSession session) {
+            return true;
+        }
+    };
+
     @Override
     public void onCreate (){
         super.onCreate();
@@ -114,36 +153,15 @@ public class App extends Application {
         mAttestation = new ApproovAttestation(mPlatformSpecifics);
 
         try {
-            Log.i("PINNING", "get key store");
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(null, null);
-            Log.i("PINNING", "read cert.pem");
-            InputStream certInputStream = getAssets().open("cert.pem");
-            BufferedInputStream bis = new BufferedInputStream(certInputStream);
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-            Log.i("PINNING", "process cert.pem");
-            while (bis.available() > 0) {
-                Log.i("PINNING", "new cert entry");
-                Certificate cert = certificateFactory.generateCertificate(bis);
-                keyStore.setCertificateEntry("example.com", cert);
-                Log.i("PINNING", "cert=" + ((X509Certificate) cert).getSubjectDN());
-            }
-            Log.i("PINNING", "set cert for 10.0.2.2");
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(keyStore);
-            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-            Log.i("PINNING", "set trust managers");
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustManagers, null);
-            Log.i("PINNING", "set client");
+            SSLContextPinner pinner = new SSLContextPinner("cert.pem");
             mClient = new OkHttpClient.Builder()
-                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0])
+                    .sslSocketFactory(pinner.getSSLContext().getSocketFactory(), pinner.getX509TrustManager())
                     .hostnameVerifier(new NoHostnameVerifier())
                     .addInterceptor(new ApproovInterceptor(mAttestation))
                     .build();
-            Log.i("PINNING", "built client");
         } catch (Exception e) {
-            Log.e("pinned", e.toString());
+            Log.e("App", e.toString());
+            Log.e("App", "Ignoring pinned certificates");
             mClient = new OkHttpClient.Builder()
                     .addInterceptor(new ApproovInterceptor(mAttestation))
                     .build();

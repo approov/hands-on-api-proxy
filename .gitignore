@@ -6,6 +6,7 @@ secrets.yaml
 secrets.xml
 secrets.js
 token-secret.txt
+*.pem
 
 # vscode
 .vscode/*

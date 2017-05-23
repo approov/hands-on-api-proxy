@@ -94,7 +94,7 @@ public class PhotoRequester {
 
                 // network failure
 
-                Log.e("PINNING", "network failure " + e.toString());
+                Log.e("PhotoRequester", "network failure " + e.toString());
 
                 Photo photo = new Photo();
 
