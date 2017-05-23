@@ -9,7 +9,6 @@ var fs = require('fs-extra');
 var yaml = require('js-yaml');
 var url = require('url');
 var selfsigned = require('selfsigned');
-var newHash = require('sha.js');
 
 var configFilename = 'secrets.yaml';
 
@@ -59,8 +58,8 @@ out: {
 
     var proxySSLUrl = url.parse(doc.proxy_home, false, true);
     proxySSLUrl.protocol = 'https:';
-    var proxySSLHome = url.format(proxyUrl);
-    var proxySSLPort = proxyUrl.port;
+    var proxySSLHome = url.format(proxySSLUrl);
+    var proxySSLPort = proxySSLUrl.port;
     
     if (doc.nasa_api_key == null) {
         console.log(chalk.red('\nERROR: missing nasa_api_key in ' + configFilename + ' configuration file\n'));
@@ -114,10 +113,8 @@ out: {
     var attrs = [{ name: 'commonName', value: 'example.com' }];
     // note adding subjectAltName to extensions options, but somewhat problematic
     var pems = selfsigned.generate(attrs, { days: 365 });
-    var buf = Buffer.from(pemstrip(pems.public).base64, 'base64');
-    var pubKeyHash = newHash('sha256').update(buf, 'utf8').digest('base64');
 
-    console.log('-- generated self-signed certificate; public key hash:', pubKeyHash);
+    console.log('-- generated self-signed certificate');
 
     // write step 0_direct-client
 

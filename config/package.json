@@ -18,6 +18,7 @@
     "commander": "^2.9.0",
     "fs-extra": "^3.0.0",
     "js-yaml": "^3.8.3",
+    "selfsigned": "^1.9.1",
     "url": "^0.11.0"
   }
 }
