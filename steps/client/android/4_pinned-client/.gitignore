@@ -63,4 +63,7 @@ freeline_project_description.json
 **/*/res/values/secrets.xml
 **/*/assets/*.pem
 
+# approov library (download latest from approov.io)
+**/approov/approov.aar
+
 # end of file

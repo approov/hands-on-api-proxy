@@ -62,4 +62,7 @@ freeline_project_description.json
 # Secrets resource file for this project
 **/*/res/values/secrets.xml
 
+# approov library (download latest from approov.io)
+**/approov/approov.aar
+
 # end of file

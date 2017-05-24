@@ -84,6 +84,14 @@ out: {
         break out;
     }
 
+    var aarLoc = path.resolve(doc.approov_android_lib);
+    var stepsLoc = path.resolve('../steps');
+    var penLoc = path.resolve('../pen');
+    if (aarLoc.lastIndexOf(penLoc, 0) >= 0 || aarLoc.lastIndexOf(stepsLoc, 0) >= 0) {
+        console.log(chalk.red('\nERROR: approov android library must not be within the pen or steps directories\n'));
+        break out;
+    }
+
     var nasaHostname = 'api.nasa.gov';
     var nasaProtocol = 'https:';
 
