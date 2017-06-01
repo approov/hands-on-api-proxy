@@ -24,4 +24,5 @@ configuration and secrets.
 | commander                   | Handles command lines                                                      |
 | fs-extra                    | Provides extra mkdir -p and cp routines                                    |
 | js-yaml                     | Provides a yaml parser                                                     |
+| selfsigned                  | generates X.509 self-signed  key material                                  |
 | url                         | Parses and formats URLs                                                    |

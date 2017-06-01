@@ -8,6 +8,7 @@ var path = require('path');
 var fs = require('fs-extra');
 var yaml = require('js-yaml');
 var url = require('url');
+var selfsigned = require('selfsigned');
 
 var configFilename = 'secrets.yaml';
 
@@ -54,6 +55,11 @@ out: {
     }
     var proxyHome = url.format(proxyUrl);
     var proxyPort = proxyUrl.port;
+
+    var proxySSLUrl = url.parse(doc.proxy_home, false, true);
+    proxySSLUrl.protocol = 'https:';
+    var proxySSLHome = url.format(proxySSLUrl);
+    var proxySSLPort = proxySSLUrl.port;
     
     if (doc.nasa_api_key == null) {
         console.log(chalk.red('\nERROR: missing nasa_api_key in ' + configFilename + ' configuration file\n'));
@@ -78,6 +84,14 @@ out: {
         break out;
     }
 
+    var aarLoc = path.resolve(doc.approov_android_lib);
+    var stepsLoc = path.resolve('../steps');
+    var penLoc = path.resolve('../pen');
+    if (aarLoc.lastIndexOf(penLoc, 0) >= 0 || aarLoc.lastIndexOf(stepsLoc, 0) >= 0) {
+        console.log(chalk.red('\nERROR: approov android library must not be within the pen or steps directories\n'));
+        break out;
+    }
+
     var nasaHostname = 'api.nasa.gov';
     var nasaProtocol = 'https:';
 
@@ -86,6 +100,7 @@ out: {
     var androidClientPath = '../steps/client/android/';
     var androidResPath = '/app/src/main/res/values/';
     var androidLibPath = '/approov/';
+    var androidSSLPath = '/app/src/main/assets/';
 
     var penPath = '../pen/';
 
@@ -93,12 +108,21 @@ out: {
     var clientResDir = '';
     var clientLibDir = '';
     var clientLibName = `approov.aar`;
+    var clientSSLDir = '';
 
     var nodeProxyPath = '../steps/proxy/node/';
     var nodeSrcPath = '/src/';
 
     var proxyDir = '';
     var proxySrcDir = '';
+
+    // generate proxy pki material
+
+    var attrs = [{ name: 'commonName', value: 'example.com' }];
+    // note adding subjectAltName to extensions options, but somewhat problematic
+    var pems = selfsigned.generate(attrs, { days: 365 });
+
+    console.log('-- generated self-signed certificate');
 
     // write step 0_direct-client
 
@@ -148,6 +172,26 @@ out: {
 
     fs.ensureDirSync(clientLibDir);
     fs.copySync(doc.approov_android_lib, path.join(clientLibDir, clientLibName));
+
+    // write step 4_pinned-client
+
+    clientDir = '4_pinned-client';
+    clientResDir = androidClientPath + clientDir + androidResPath;
+    clientLibDir = androidClientPath + clientDir + androidLibPath;
+    clientSSLDir = androidClientPath + clientDir + androidSSLPath;
+
+    fs.ensureDirSync(clientResDir);
+    fs.writeFileSync(clientResDir + 'config.xml',
+        '<resources>\n' +
+        '    <string name=\"api_url\">' + proxySSLHome + nasaHostname + '</string>\n' +
+        '</resources>\n'
+    );
+
+    fs.ensureDirSync(clientLibDir);
+    fs.copySync(doc.approov_android_lib, path.join(clientLibDir, clientLibName));
+
+    fs.ensureDirSync(clientSSLDir);
+    fs.writeFileSync(clientSSLDir + 'cert.pem', pems.cert);
 
     // write step 1_open-proxy
     
@@ -235,6 +279,41 @@ out: {
         '        \'' + doc.approov_token_secret + '\',\n' +
         '};\n'
     );
+
+    // write step 4_pinned-proxy
+    
+    proxyDir = '4_pinned-proxy';
+    proxySrcDir = nodeProxyPath + proxyDir + nodeSrcPath;
+
+    fs.ensureDirSync(proxySrcDir);
+    fs.writeFileSync(proxySrcDir + 'config.js',
+        'module.exports = {\n' +
+        '    proxy_port:             /* port the proxy listens on */\n' +
+        '        ' + proxySSLPort + ',\n' +
+        '    nasa_host:              /* NASA API host */\n' +
+        '        \'' + nasaHostname + '\',\n' +
+        '    nasa_protocol:          /* NASA API protocol */\n' +
+        '        \'' + nasaProtocol + '\',\n' +
+        '    approov_header:         /* Approov header name */\n' +
+        '        \'' + 'approov' + '\',\n' +
+        '    approov_enforcement:    /* set true to enforce token checks */\n' +
+        '        ' + false + ',\n' +
+        '};\n'
+    );
+
+    fs.ensureDirSync(proxySrcDir);
+    fs.writeFileSync(proxySrcDir + 'secrets.js',
+        'module.exports = {\n' +
+        '    nasa_api_key:           /* api key received from NASA */\n' +
+        '        \'' + doc.nasa_api_key + '\',\n' +
+        '    approov_token_secret:   /* token secret received from Approov demo download */\n' +
+        '        \'' + doc.approov_token_secret + '\',\n' +
+        '};\n'
+    );
+
+    fs.ensureDirSync(proxySrcDir);
+    fs.writeFileSync(proxySrcDir + 'cert.pem', pems.cert);
+    fs.writeFileSync(proxySrcDir + 'key.pem', pems.private);
 
     // write pen/client (0_direct-client)
 
