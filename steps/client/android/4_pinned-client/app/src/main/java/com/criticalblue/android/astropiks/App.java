@@ -161,10 +161,8 @@ public class App extends Application {
                     .build();
         } catch (Exception e) {
             Log.e("App", e.toString());
-            Log.e("App", "Ignoring pinned certificates");
-            mClient = new OkHttpClient.Builder()
-                    .addInterceptor(new ApproovInterceptor(mAttestation))
-                    .build();
+            Log.e("App", "Failed to pin connection");
+            throw new IllegalStateException("Failed to pin connection:");
         }
 
         mDownloader = new Picasso.Builder(this)
