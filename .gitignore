@@ -11,4 +11,7 @@ token-secret.txt
 # vscode
 .vscode/*
 
+# mac
+.DS_Store
+
 # end of file

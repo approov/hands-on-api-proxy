@@ -62,14 +62,12 @@ public class App extends Application {
             Request request = chain.request();
 
             TokenInterface.ApproovResults approovResults =
-                    ApproovAttestation.shared().fetchApproovTokenAndWait(request.url().host());
+                    ApproovAttestation.shared().fetchApproovTokenAndWait(null);
             String token;
             if (approovResults.getResult() == ApproovAttestation.AttestationResult.SUCCESS) {
                 token = approovResults.getToken();
-                Log.i("ATTEST", "normal");
             } else {
                 token = "NOTOKEN";
-                Log.i("ATTEST", "abnormal: " + approovResults.getResult());
             }
             request = request.newBuilder().addHeader("approov", token).build();
 
