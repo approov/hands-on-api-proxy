@@ -3,10 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/4_pinned-client.iml" filepath="$PROJECT_DIR$/4_pinned-client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/4_pinned-client.iml" filepath="$PROJECT_DIR$/4_pinned-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/approov/approov.iml" filepath="$PROJECT_DIR$/approov/approov.iml" />
       <module fileurl="file://$PROJECT_DIR$/approov/approov.iml" filepath="$PROJECT_DIR$/approov/approov.iml" />
     </modules>
   </component>

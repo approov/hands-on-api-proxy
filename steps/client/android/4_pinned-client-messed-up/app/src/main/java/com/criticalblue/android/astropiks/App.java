@@ -20,7 +20,6 @@ import android.app.Application;
 import android.util.Log;
 
 import com.criticalblue.attestationlibrary.ApproovAttestation;
-import com.criticalblue.attestationlibrary.ApproovConfig;
 import com.criticalblue.attestationlibrary.TokenInterface;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
@@ -41,6 +40,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import okhttp3.CertificatePinner;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
