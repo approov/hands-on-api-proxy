@@ -15,3 +15,5 @@ token-secret.txt
 .DS_Store
 
 # end of file
+
+caches/

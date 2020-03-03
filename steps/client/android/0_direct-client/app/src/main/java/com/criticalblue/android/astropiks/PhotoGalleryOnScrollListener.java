@@ -16,8 +16,8 @@
 
 package com.criticalblue.android.astropiks;
 
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Listens for scrolling within photo gallery recycler view.
