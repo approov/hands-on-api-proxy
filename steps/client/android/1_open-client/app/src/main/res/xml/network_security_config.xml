@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <domain-config cleartextTrafficPermitted="true">
+    <!-- https://developer.android.com/studio/run/emulator-networking#networkaddresses-->
+    <!-- allows http to be used on the ip 10.0.2.2, that is the ip used by the Android emulator to access localhost in our computer -->
+    <domain includeSubdomains="false">10.0.2.2</domain>
+  </domain-config>
+</network-security-config>

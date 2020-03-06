@@ -17,6 +17,7 @@
 package com.criticalblue.android.astropiks;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -84,6 +85,8 @@ public class PhotoRequester {
 
         String urlRequest = mContext.getString(R.string.api_url) +
                 BASE_PATH + DATE_PARAMETER + date;
+        Log.d("ASTROPIKS_APP", urlRequest);
+
         //urlRequest += API_KEY_PARAMETER + mContext.getString(R.string.api_key);
         final Request request = new Request.Builder().url(urlRequest).build();
         mLoadingData = true;
@@ -93,6 +96,7 @@ public class PhotoRequester {
             public void onFailure(Call call, IOException e) {
 
                 // network failure
+                Log.e("ASTROPIKS_APP", e.toString());
 
                 Photo photo = new Photo();
 
