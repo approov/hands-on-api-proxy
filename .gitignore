@@ -17,3 +17,5 @@ token-secret.txt
 # end of file
 
 caches/
+
+.env
