@@ -14,31 +14,15 @@
  * limitations under the License.
  */
 
-const path = require('path');
 const url = require('url');
 const request = require('request');
 const chalk = require('chalk');
 
 // load api configuration and secrets
-
 const config = require(`${__dirname}/../config.js`);
-
-if (config.nasa_host == null) {
-  throw new Error(`nasa_host not found; please set in ${__dirname}/../config.js`);
-}
-const api_host = config.nasa_host;
-
-if (config.nasa_protocol == null) {
-  throw new Error(`nasa_protocol not found; please set in ${__dirname}/../config.js`);
-}
-const api_protocol = config.nasa_protocol;
-
-const secrets = require(`${__dirname}/../secrets.js`);
-
-if (secrets.nasa_api_key == null) {
-  throw new Error(`nasa_api_key not found; please set in ${__dirname}/../secrets.js`);
-}
-const api_key = secrets.nasa_api_key;
+const api_host = config.NASA_HOST;
+const api_protocol = config.NASA_PROTOCOL;
+const api_key = config.NASA_API_KEY;
 
 /**
  * Describes NASA API route handlers.
@@ -48,7 +32,6 @@ const api_key = secrets.nasa_api_key;
 function routes(app) {
 
   // proxy a picture of the day request
-
   app.use(`/${api_host}`, (req, res, next) => {
     console.log('Processing NASA API request');
 
@@ -61,6 +44,7 @@ function routes(app) {
     delete urlInfo.search;
     urlInfo.query.api_key = api_key;         // add nasa api key
     var nasaUrl = url.format(urlInfo);
+    console.log("URL: " + nasaUrl)
 
     var nasaHdrs = req.headers;              // reuse most headers
     delete nasaHdrs['host'];
