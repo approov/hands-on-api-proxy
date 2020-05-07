@@ -14,86 +14,58 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const chalk = require('chalk');
-const foreach = require(__dirname + '/foreach');
-
+const api = require('./api/nasa');
 const app = require('express')();
+const config = require('./config');
+const approov = require('./approov-token-check')
+const log = require('./logging')
 
-// load and check port
+const proxyPort = config.PROXY_PORT
+const approovHeaderName = config.APPROOV_HEADER_NAME;
 
-const config = require(`${__dirname}/config.js`);
+function log_request(req, res, next) {
 
-const proxyPort = process.env.PROXY_PORT || config.proxy_port || 8080;
-if ((process.env.PROXY_PORT == null) && (config.proxy_port  == null)) {
-  console.log(chalk.red(`\nCAUTION: proxy_port not found; please set in ${__dirname}/config.js\n`));
-}
+  log.raw('-------------------------------- NEW REQUEST --------------------------------')
 
-// load and check approov token checking
-
-const approov = require(`${__dirname}/approov`);
-
-if (config.approov_header  == null) {
-  throw new Error(`approov_header not found; please set in ${__dirname}/config.js`);
-}
-const approovHdr = config.approov_header;
-
-function log_req(req) {
-  console.log(chalk.cyan(`Request: ${JSON.stringify({
+  const request = JSON.stringify({
     originalUrl: req.originalUrl,
     params: req.params,
     headers: req.headers,
-  }, null, '  ')}`));
+  }, null, '  ')
+
+  log.debug(request);
+
+  next()
 }
 
-// preprocess all proxy requests
+app.use('*', log_request);
 
-app.use((req, res, next) => {
-  // check and delete approov token
-
-  //log_req(req);
-
-  var token = req.headers[approovHdr];
-  delete req.headers[approovHdr];
-
-  if (!approov.isValid(token)) {
-    console.log(chalk.red('Unauthorized: invalid Approov token'));
-    res.status(401).send('Unauthorized');
-    return;
-  }
-
-  next();
+// Handles request to the root entry point.
+app.get('/', (req, res) => {
+  log.info('ENDPOINT: /');
+  res.status(200).send('Astropik Reverse Proxy...');
 });
 
-// process additional api proxy routes (every module in api directory)
-
-foreach.fileInDir(__dirname + '/api', /\.js$/, (file) => {
-  console.log(chalk.green(`adding ${path.basename(file, '.js')} API module to proxy handlers.`));
-  require(path.join(path.dirname(file), path.basename(file, '.js'))).routes(app);
-});
-
-// process unhandled routes
-
-app.use('/', (req, res, next) => {
-  console.log(chalk.red(`Not Found: unhandled api endpoint: ${req.url}`));
-  res.status(404).send('Not Found');
-});
-
-// process request error
-
+// Handles errors in the request
 app.use((err, req, res, next) => {
-  console.log(chalk.red(`Internal Server Error: ${err}`));
+  log.fatalError(`Internal Server Error: ${err}`);
   res.status(500).send('Internal Server Error');
 });
 
-// start listening
+app.use('/*', approov.checkApproovToken)
 
+app.use('/*', approov.handlesApproovTokenError)
+
+app.use('/*', approov.handlesApproovTokenSuccess)
+
+// preprocess all proxy requests
+api.routes(app)
+
+// Starts the proxy server
 app.listen(proxyPort, (err) => {
   if (err) {
-    return console.log(chalk.red(`Unexpected error tryng to listen on ${proxyPort}:`, err));
+    return log.fatalError(`Unexpected error tryng to listen on ${proxyPort}:`, err);
   }
 
-  console.log(chalk.green(`api proxy server is listening on ${proxyPort}`));
+  log.success(`Api proxy server is listening on ${proxyPort}`);
 });
-
-// end of file
