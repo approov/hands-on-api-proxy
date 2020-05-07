@@ -1,5 +1,5 @@
 {
-  "name": "proxy-server",
+  "name": "step-1-open-proxy-server",
   "version": "1.0.0",
   "description": "Node server which proxies requests for mobile applications",
   "author": "Skip Hovsmith",

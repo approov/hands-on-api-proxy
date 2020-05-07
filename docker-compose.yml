@@ -2,13 +2,27 @@ version: "2.3"
 
 services:
 
-  1_open-proxy:
-    image: approov/astropik-proxy-nodejs:${ENVIRONMENT:-dev}
+  shell:
+    image: approov/astropik-proxy-nodejs
     build:
       context: ./docker/build
       dockerfile: nodejs.Dockerfile
-    container_name: "astropik-open-proxy"
-    hostname: "${ENVIRONMENT:-dev}.astropik"
+    working_dir: /home/node/workspace
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/home/node/workspace
+    command:
+      - sh
+    networks:
+      - astropik
+      - traefik
+
+  1_open-proxy:
+    image: approov/astropik-proxy-nodejs
+    build:
+      context: ./docker/build
+      dockerfile: nodejs.Dockerfile
     working_dir: /home/node/workspace/steps/proxy/node/1_open-proxy
     env_file:
       - ./.env
@@ -18,16 +32,42 @@ services:
       - npm
       - start
     ports:
-      - 127.0.0.1:${STEP_1_PROXY_PORT}:${STEP_1_PROXY_PORT}
+      - 127.0.0.1:${STEP_1_PROXY_PORT:? Missing STEP_1_PROXY_PORT}:${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT}
     networks:
       - astropik
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=${ENVIRONMENT:-dev}.astropik"
+      - "traefik.backend=step1.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
       - "traefik.docker.network=traefik"
-      - "traefik.port=${ASTROPIK_HTTP_PORT:? Missing ASTROPIK_HTTP_PORT}"
-      - "traefik.frontend.rule=Host:${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
+      - "traefik.port=${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT in .env file}"
+      - "traefik.frontend.rule=Host:step1.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
+
+  2_secure-proxy:
+    image: approov/astropik-proxy-nodejs
+    build:
+      context: ./docker/build
+      dockerfile: nodejs.Dockerfile
+    working_dir: /home/node/workspace/steps/proxy/node/2_secure-proxy
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/home/node/workspace
+    command:
+      - npm
+      - start
+    ports:
+      - 127.0.0.1:${STEP_2_PROXY_PORT:? Missing STEP_2_PROXY_PORT}:${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT}
+    networks:
+      - astropik
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=step2.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
+      - "traefik.docker.network=traefik"
+      - "traefik.port=${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT}"
+      - "traefik.frontend.rule=Host:step2.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
+
 networks:
   astropik:
     driver: "bridge"

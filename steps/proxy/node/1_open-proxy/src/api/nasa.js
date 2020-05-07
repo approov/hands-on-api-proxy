@@ -19,7 +19,7 @@ const request = require('request');
 const chalk = require('chalk');
 
 // load api configuration and secrets
-const config = require(`${__dirname}/../config.js`);
+const config = require('./../config.js');
 const api_host = config.NASA_HOST;
 const api_protocol = config.NASA_PROTOCOL;
 const api_key = config.NASA_API_KEY;

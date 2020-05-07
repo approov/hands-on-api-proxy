@@ -17,21 +17,13 @@
 package com.criticalblue.android.astropiks;
 
 import android.app.Application;
-import android.util.Log;
 
-import com.criticalblue.attestationlibrary.ApproovAttestation;
-import com.criticalblue.attestationlibrary.ApproovConfig;
-import com.criticalblue.attestationlibrary.TokenInterface;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+
+import io.approov.framework.okhttp.ApproovService;
 
 /**
  * Represents the astropix application.
@@ -40,61 +32,18 @@ import okhttp3.Response;
  * throughout the running activities.
  */
 public class App extends Application {
-    final static String TAG = "APP";
-
     OkHttpClient mClient = null;
     Picasso mDownloader = null;
 
-    /**
-     * Adds Approov attestation token to http requests.
-     */
-    private class ApproovInterceptor implements Interceptor {
-
-        /**
-         * Intercepts the http request and adds the approov token to the request headers.
-         *
-         * @param chain the request chain.
-         * @return the augmented request.
-         * @throws IOException on I/O error.
-         */
-        @Override
-        public Response intercept(Chain chain) throws IOException {
-            Request request = chain.request();
-
-            TokenInterface.ApproovResults approovResults =
-                    ApproovAttestation.shared().fetchApproovTokenAndWait(null);
-            String token;
-            if (approovResults.getResult() == ApproovAttestation.AttestationResult.SUCCESS) {
-                token = approovResults.getToken();
-            } else {
-                token = "NOTOKEN";
-            }
-            request = request.newBuilder().addHeader("approov", token).build();
-
-            return chain.proceed(request);
-        }
-    }
+    public static ApproovService approovService;
 
     @Override
     public void onCreate (){
         super.onCreate();
 
-        // Initialize the Approov SDK
-        try {
-            // Creates the configuration object for the Approov SDK based
-            // on the Android application context
-            ApproovConfig config =
-                    ApproovConfig.getDefaultConfig(this.getApplicationContext());
-            ApproovAttestation.initialize(config);
-        } catch (IllegalArgumentException ex) {
-            Log.e(TAG, ex.getMessage());
-        } catch (MalformedURLException ex) {
-            Log.e(TAG, ex.getMessage());
-        }
+        approovService = new ApproovService(getApplicationContext(), getResources().getString(R.string.approov_config));
+        mClient = approovService.getOkHttpClient();
 
-        mClient = new OkHttpClient.Builder()
-                .addInterceptor(new ApproovInterceptor())
-                .build();
         mDownloader = new Picasso.Builder(this)
                 .downloader(new OkHttp3Downloader(mClient))
                 .build();
@@ -103,7 +52,7 @@ public class App extends Application {
     /**
      * Returns a client for http requests.
      *
-     * @return an http client.
+     * @returns an http client.
      */
     public OkHttpClient getHttpClient() {
         return mClient;
@@ -112,7 +61,7 @@ public class App extends Application {
     /**
      * Returns an image downloader for http requests.
      *
-     * @return an http downloader.
+     * @returns an http downloader.
      */
     public Picasso getImageDownloader() {
         return mDownloader;
