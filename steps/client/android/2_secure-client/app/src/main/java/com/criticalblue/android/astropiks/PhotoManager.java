@@ -29,10 +29,10 @@ import java.util.UUID;
 /**
  * Manages the photo collection (singleton).
  */
-public class PhotoManager {
+class PhotoManager {
     private static PhotoManager sPhotoManager;
 
-    private List<Photo> mPhotos;
+    private final List<Photo> mPhotos;
 
     public static PhotoManager get() {
         if (sPhotoManager == null) {
@@ -59,5 +59,3 @@ public class PhotoManager {
         return null;
     }
 }
-
-// end of file

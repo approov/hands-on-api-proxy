@@ -34,5 +34,3 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
         }
     }
 }
-
-// end of file

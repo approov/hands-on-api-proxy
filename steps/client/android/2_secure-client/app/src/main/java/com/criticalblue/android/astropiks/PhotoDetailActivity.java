@@ -42,5 +42,3 @@ public class PhotoDetailActivity extends SingleFragmentActivity {
         return PhotoDetailFragment.newInstance(photoId);
     }
 }
-
-// end of file

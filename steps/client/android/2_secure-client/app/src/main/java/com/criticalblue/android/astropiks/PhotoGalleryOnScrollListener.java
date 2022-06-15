@@ -16,6 +16,7 @@
 
 package com.criticalblue.android.astropiks;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,7 +39,7 @@ public abstract class PhotoGalleryOnScrollListener extends RecyclerView.OnScroll
     }
 
     @Override
-    public void onScrolled(RecyclerView view, int dx, int dy) {
+    public void onScrolled(@NonNull RecyclerView view, int dx, int dy) {
         int lastVisibleItemPosition = 0;
         int totalItemCount = mGridLayoutManager.getItemCount();
 
@@ -73,10 +74,8 @@ public abstract class PhotoGalleryOnScrollListener extends RecyclerView.OnScroll
     /**
      * Loads more photos.
      *
-     * @param nphotos # of photos to load.
+     * @param nPhotos # of photos to load.
      * @param view    recycler view.
      */
     public abstract void onLoadMore(int nPhotos, RecyclerView view);
 }
-
-// end of file

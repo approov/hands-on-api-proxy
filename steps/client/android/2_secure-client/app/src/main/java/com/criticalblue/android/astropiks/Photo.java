@@ -24,7 +24,7 @@ import java.util.UUID;
  */
 public class Photo {
 
-    private UUID mId;
+    private final UUID mId;
     private Date mDate;
     private String mTitle;
     private String mDesc;
@@ -119,5 +119,3 @@ public class Photo {
         return mUrl;
     }
 }
-
-// end of file

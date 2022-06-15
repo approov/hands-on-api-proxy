@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -33,14 +34,10 @@ import java.util.UUID;
 public class PhotoDetailFragment extends Fragment {
 
     private static final String ARG_POD_ID = "pod_id";
-
     private App mApp;
     private Photo mPhoto;
-    private TextView mTitleView;
-    private ImageView mImageView;
-    private TextView mCaptionView;
 
-    public static PhotoDetailFragment newInstance(UUID photoId) {
+  public static PhotoDetailFragment newInstance(UUID photoId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_POD_ID, photoId);
 
@@ -52,8 +49,8 @@ public class PhotoDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mApp = ((App)getActivity().getApplication());
-        UUID photoId = (UUID) getArguments().getSerializable(ARG_POD_ID);
+        mApp = (App) requireActivity().getApplication();
+        UUID photoId = (UUID) requireArguments().getSerializable(ARG_POD_ID);
         mPhoto = PhotoManager.get().getPhoto(photoId);
     }
 
@@ -61,20 +58,22 @@ public class PhotoDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_photo_detail, container, false);
 
-        mTitleView = (TextView) v.findViewById(R.id.photo_title);
+        TextView mTitleView = (TextView) v.findViewById(R.id.photo_title);
         mTitleView.setText(getPhotoTitle(mPhoto));
 
-        mImageView = (ImageView) v.findViewById(R.id.photo_image);
-        if (mPhoto.getUrl() != null) {
+        ImageView mImageView = (ImageView) v.findViewById(R.id.photo_image);
+        String photoURL = mPhoto.getUrl();
+
+        if (photoURL != null) {
             mApp.getImageDownloader(/*mImageView.getContext()*/)
-                    .load(mPhoto.getUrl())
-                    //.error(R.drawable.no_image)
+                    .load(photoURL)
+                    .error(R.drawable.no_image)
                     .into(mImageView);
         } else {
             mImageView.setImageResource(R.drawable.no_image);
         }
 
-        mCaptionView = (TextView) v.findViewById(R.id.photo_caption);
+        TextView mCaptionView = (TextView) v.findViewById(R.id.photo_caption);
         mCaptionView.setText(getPhotoCaption(mPhoto));
 
         return v;
@@ -115,5 +114,3 @@ public class PhotoDetailFragment extends Fragment {
         }
     }
 }
-
-// end of file

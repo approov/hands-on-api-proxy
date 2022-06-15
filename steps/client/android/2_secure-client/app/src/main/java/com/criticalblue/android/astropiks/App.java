@@ -17,55 +17,53 @@
 package com.criticalblue.android.astropiks;
 
 import android.app.Application;
-
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
-
 import okhttp3.OkHttpClient;
 
-import io.approov.framework.okhttp.ApproovService;
+// *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
+// import io.approov.service.okhttp.ApproovService;
 
 /**
- * Represents the astropix application.
+ * Represents the Astropiks application.
  *
  * This is only used to hold a long running Approov attestation object
  * throughout the running activities.
  */
 public class App extends Application {
-    OkHttpClient mClient = null;
-    Picasso mDownloader = null;
-
-    public static ApproovService approovService;
 
     @Override
     public void onCreate (){
         super.onCreate();
 
-        approovService = new ApproovService(getApplicationContext(), getResources().getString(R.string.approov_config));
-        mClient = approovService.getOkHttpClient();
+        // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
+        // ApproovService.initialize(getApplicationContext(), getString(R.string.approov_config));
 
-        mDownloader = new Picasso.Builder(this)
-                .downloader(new OkHttp3Downloader(mClient))
-                .build();
+        // *** UNCOMMENT THE LINE BELOW FOR APPROOV RUNTIME SECRETS ***
+        // ApproovService.addSubstitutionQueryParam("api_key");
     }
 
     /**
      * Returns a client for http requests.
      *
-     * @returns an http client.
+     * @return an http client.
      */
     public OkHttpClient getHttpClient() {
-        return mClient;
+        // *** COMMENT THE LINE BELOW FOR APPROOV ***
+        return new OkHttpClient.Builder().build();
+
+        // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
+        // return ApproovService.getOkHttpClient();
     }
 
     /**
      * Returns an image downloader for http requests.
      *
-     * @returns an http downloader.
+     * @return an http downloader.
      */
     public Picasso getImageDownloader() {
-        return mDownloader;
+        return new Picasso.Builder(this)
+            .downloader(new OkHttp3Downloader(getHttpClient()))
+            .build();
     }
 }
-
-// end of file
