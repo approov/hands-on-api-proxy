@@ -16,7 +16,11 @@
 
 package com.criticalblue.android.astropiks;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +30,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -36,36 +41,40 @@ import okhttp3.Response;
 /**
  * Requests photo information.
  */
-public class PhotoRequester {
+class PhotoRequester {
+
+    private final String mRequestURL;
+    private final App mApp;
 
     public interface ResponseListener {
         void receivedPhoto(Photo photo);
     }
 
-    private Calendar mCalendar;
-    private SimpleDateFormat mDateFormat;
-    private ResponseListener mResponseListener;
-    private Context mContext;
-    private OkHttpClient mClient;
+    private final Calendar mCalendar;
+    private final SimpleDateFormat mDateFormat;
+    private final ResponseListener mResponseListener;
+    private final Context mContext;
     private static final String BASE_PATH = "/planetary/apod?";
-    private static final String DATE_PARAMETER = "date=";
+    private static final String DATE_PARAMETER = "&date=";
     private static final String DATE_FORMAT = "yyyy-MM-dd";
-    private static final String API_KEY_PARAMETER = "&api_key=";
+    private static final String API_KEY_PARAMETER = "api_key=";
     private static final String MEDIA_TYPE_KEY = "media_type";
     private static final String MEDIA_TYPE_VIDEO_VALUE = "video";
-    private boolean mLoadingData;
-
-    public boolean isLoadingData() {
-        return mLoadingData;
-    }
 
     public PhotoRequester(Context context, App app, ResponseListener listener) {
         mContext = context;
         mResponseListener = listener;
-        mClient = app.getHttpClient();
         mCalendar = Calendar.getInstance();
         mDateFormat = new SimpleDateFormat(DATE_FORMAT);
-        mLoadingData = false;
+        mApp = app;
+        mRequestURL = buildRequestURL();
+    }
+
+    public String buildRequestURL() {
+      // build and the request URL with api_key and date parameters
+      String urlRequest = mContext.getString(R.string.api_url) + BASE_PATH;
+      urlRequest += API_KEY_PARAMETER + mContext.getString(R.string.api_key);
+      return urlRequest;
     }
 
     /**
@@ -74,82 +83,69 @@ public class PhotoRequester {
      * @throws IOException if all else fails.
      */
     public void getPhoto() throws IOException {
+      // grab the current calendar date and back up one day for next request
+      final String date = mDateFormat.format(mCalendar.getTime());
+      mCalendar.add(Calendar.DAY_OF_YEAR, -1);
 
-        // grab the current calendar date and back up one day for next request
+      final Request request = new Request.Builder().url(mRequestURL + DATE_PARAMETER + date).build();
 
-        final String date = mDateFormat.format(mCalendar.getTime());
-        mCalendar.add(Calendar.DAY_OF_YEAR, -1);
+      makeRequest(request);
+    }
 
-        // build and call the request
+    private void makeRequest(Request request) {
+        OkHttpClient httpClient = mApp.getHttpClient();
 
-        String urlRequest = mContext.getString(R.string.api_url) +
-                BASE_PATH + DATE_PARAMETER + date;
-        final Request request = new Request.Builder().url(urlRequest).build();
-        mLoadingData = true;
-
-        mClient.newCall(request).enqueue(new Callback() {
+        httpClient.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
-
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 // network failure
+                Log.e("ASTROPIKS_APP", e.toString());
 
-                Photo photo = new Photo();
-
-                photo.setUrl(null);
-                photo.setTitle("Network Failure");
-                photo.setDesc("Unable to complete network request.");
-                photo.setDate(null);
-
-                mResponseListener.receivedPhoto(photo);
-                mLoadingData = false;
+                mResponseListener.receivedPhoto(buildPhoto(
+                  null,
+                  "Network Failure",
+                  "Unable to complete network request.",
+                  null
+                ));
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
 
                 // network response
                 if (response.code() == 500) {
-                    // skip this poto and try again
-
+                    // skip this photo and try again
                     getPhoto();
                 } else if (response.code() != 200) {
-                    // unsuccessful response
+                    // unsuccessful response;
+                    Log.e("ASTROPIKS_APP", "Failed to get the photo. Response code: " + response.code());
 
-                    Photo photo = new Photo();
-
-                    photo.setUrl(null);
-                    photo.setTitle("Unauthorized");
-                    photo.setDesc("You are not authorized to access this information.");
-                    photo.setDate(null);
-
-                    mResponseListener.receivedPhoto(photo);
-                    mLoadingData = false;
-                    return;
+                    mResponseListener.receivedPhoto(buildPhoto(
+                      null,
+                      "Unauthorized",
+                      "You are not authorized to access this information.",
+                      null
+                    ));
+                   return;
                 }
 
                 try {
-                    JSONObject photoJSON = new JSONObject(response.body().string());
+                    JSONObject photoJSON = new JSONObject(Objects.requireNonNull(response.body()).string());
 
                     if (photoJSON.has("error")) {
                         // bad photo data, likely a rate limit error
+                        String title = photoJSON.getJSONObject("error").getString("code");
+                        String desc = photoJSON.getJSONObject("error").getString("message");
 
-                        Photo photo = new Photo();
+                        mResponseListener.receivedPhoto(buildPhoto(
+                          null,
+                          title,
+                          desc,
+                          null
+                        ));
 
-                        String code = photoJSON.getJSONObject("error").getString("code");
-                        String msg = photoJSON.getJSONObject("error").getString("message");
-
-                        photo.setUrl(null);
-                        photo.setTitle(code);
-                        photo.setDesc(msg);
-                        photo.setDate(null);
-
-                        mResponseListener.receivedPhoto(photo);
-                        mLoadingData = false;
                     } else if (!photoJSON.getString(MEDIA_TYPE_KEY).equals(MEDIA_TYPE_VIDEO_VALUE)) {
                         // is an image, grab it
-
-                        Photo photo = new Photo();
-
                         String url = null;
                         String title = null;
                         String desc = null;
@@ -161,44 +157,46 @@ public class PhotoRequester {
                             desc = photoJSON.getString("explanation");
                             date = photoJSON.getString("date");
                         } catch (JSONException e) {
-                        }
-
-                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                        Date day = null;
-                        try {
-                            day = dateFormat.parse(date);
-                        } catch (ParseException e) {
                             e.printStackTrace();
                         }
 
-                        photo.setUrl(url);
-                        photo.setTitle(title);
-                        photo.setDesc(desc);
-                        photo.setDate(day);
+                        Date day = parseDate(date);
 
-                        mResponseListener.receivedPhoto(photo);
-                        mLoadingData = false;
+                        mResponseListener.receivedPhoto(buildPhoto(url, title, desc, day));
                     } else {
                         // probably a video, try again
-
                         getPhoto();
                     }
                 } catch (JSONException e) {
-                    // response body not expected JSON
-
-                    Photo photo = new Photo();
-
-                    photo.setUrl(null);
-                    photo.setTitle("Invalid Photo");
-                    photo.setDesc("Unexpected error when requesting photo.");
-                    photo.setDate(null);
-
-                    mResponseListener.receivedPhoto(photo);
-                    mLoadingData = false;
+                     // response body not expected JSON
+                     mResponseListener.receivedPhoto(buildPhoto(
+                       null,
+                       "Invalid Photo",
+                       "Unexpected error when requesting photo.",
+                       null
+                     ));
                 }
             }
         });
     }
-}
 
-// end of file
+    private Date parseDate(String date) {
+      @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+      try {
+        return dateFormat.parse(date);
+      } catch (ParseException e) {
+        e.printStackTrace();
+      }
+      return null;
+    }
+
+    private Photo buildPhoto(String url, String title, String desc, Date day) {
+        Photo photo = new Photo();
+        photo.setUrl(url);
+        photo.setTitle(title);
+        photo.setDesc(desc);
+        photo.setDate(day);
+
+        return photo;
+    }
+}

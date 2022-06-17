@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-const path = require('path');
 const chalk = require('chalk');
-const foreach = require(__dirname + '/foreach');
-
+const api = require('./api/nasa');
 const app = require('express')();
+const config = require('./config.js');
 
-// load and check port
-
-const config = require(`${__dirname}/config.js`);
-
-const proxyPort = process.env.PROXY_PORT || config.proxy_port || 8080;
-if ((process.env.PROXY_PORT == null) && (config.proxy_port  == null)) {
-  console.log(chalk.red(`\nCAUTION: proxy_port not found; please set in ${__dirname}/config.js\n`));
-}
+const proxyPort = config.PROXY_PORT
 
 function log_req(req) {
   console.log(chalk.cyan(`Request: ${JSON.stringify({
@@ -38,27 +30,11 @@ function log_req(req) {
 }
 
 // preprocess all proxy requests
-
-app.use((req, res, next) => {
-  // just pass through each request
-
-  //log_req(req);
-
-  next();
-});
-
-// process additional api proxy routes (every module in api directory)
-
-foreach.fileInDir(__dirname + '/api', /\.js$/, (file) => {
-  console.log(chalk.green(`adding ${path.basename(file, '.js')} API module to proxy handlers.`));
-  require(path.join(path.dirname(file), path.basename(file, '.js'))).routes(app);
-});
-
-// process unhandled routes
+api.routes(app)
 
 app.use('/', (req, res, next) => {
   console.log(chalk.red(`Not Found: unhandled api endpoint: ${req.url}`));
-  res.status(404).send('Not Found');
+  res.status(200).send('Astropik Reverse Proxy...');
 });
 
 // process request error
@@ -77,5 +53,3 @@ app.listen(proxyPort, (err) => {
 
   console.log(chalk.green(`api proxy server is listening on ${proxyPort}`));
 });
-
-// end of file

@@ -1,15 +1,24 @@
 apply plugin: 'com.android.application'
 
+Properties properties = new Properties()
+if (project.rootProject.file('local.properties').canRead()) {
+  properties.load(project.rootProject.file("local.properties").newDataInputStream())
+}
+
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 32
     defaultConfig {
         applicationId "com.criticalblue.android.astropiks"
-        minSdkVersion 19
-        targetSdkVersion 25
+        minSdk 21
+        targetSdkVersion 32
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        resValue "string", "api_key", "${properties.getProperty('api.key')}"
+        resValue "string", "api_url", "${properties.getProperty('api.url')}"
+
+        // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
+        resValue "string", "approov_config", "${properties.getProperty('approov.config')}"
     }
     buildTypes {
         release {
@@ -17,19 +26,22 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+  namespace 'com.criticalblue.android.astropiks'
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:recyclerview-v7:25.3.1'
-    compile 'com.squareup.okhttp3:okhttp:3.6.0'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    compile project(':approov')
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.12'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
+
+    // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
+    implementation 'com.github.approov:approov-service-okhttp:3.0.6'
 }

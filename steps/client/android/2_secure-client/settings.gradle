@@ -1,1 +1,1 @@
-include ':app', ':approov'
+include ':app'

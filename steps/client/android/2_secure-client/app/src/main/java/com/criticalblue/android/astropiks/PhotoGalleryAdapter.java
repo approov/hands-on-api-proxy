@@ -18,7 +18,9 @@ package com.criticalblue.android.astropiks;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,14 +33,15 @@ import java.util.List;
  */
 public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapter.PhotoHolder> {
 
-    private List<Photo> mPhotos;
-    private App mApp;
+    private final List<Photo> mPhotos;
+    private final App mApp;
 
     public PhotoGalleryAdapter(List<Photo> photos, App app) {
         mPhotos = photos;
         mApp = app;
     }
 
+    @NonNull
     @Override
     public PhotoHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View inflatedView = LayoutInflater.from(parent.getContext())
@@ -59,9 +62,9 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
 
     public static class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private ImageView mItemImage;
+        private final ImageView mItemImage;
         private Photo mPhoto;
-        private App mApp;
+        private final App mApp;
 
         public PhotoHolder(View v, App app) {
             super(v);
@@ -77,7 +80,7 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
             if (mPhoto.getUrl() != null) {
                 mApp.getImageDownloader()
                         .load(mPhoto.getUrl())
-                        //.error(R.drawable.no_image)
+                        .error(R.drawable.no_image)
                         .into(mItemImage);
             } else {
                 mItemImage.setImageResource(R.drawable.no_image);
@@ -92,5 +95,3 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
         }
     }
 }
-
-// end of file

@@ -17,9 +17,9 @@
 package com.criticalblue.android.astropiks;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PhotoGalleryFragment extends Fragment implements PhotoRequester.ResponseListener {
     private static final String TAG = "PhotoGalleryFragment";
@@ -34,10 +35,8 @@ public class PhotoGalleryFragment extends Fragment implements PhotoRequester.Res
 
     private List<Photo> mPhotos = new ArrayList<>();
     private PhotoRequester mPhotoRequester;
-    private RecyclerView mPhotoRecyclerView;
     private GridLayoutManager mGridLayoutManager;
     private PhotoGalleryAdapter mPhotoGalleryAdapter;
-    private PhotoGalleryOnScrollListener mScrollListener;
     private App mApp;
 
     public static PhotoGalleryFragment newInstance() {
@@ -50,8 +49,7 @@ public class PhotoGalleryFragment extends Fragment implements PhotoRequester.Res
         setRetainInstance(true);
 
         // create model and data source
-
-        mApp = ((App)getActivity().getApplication());
+        mApp = (App) Objects.requireNonNull(getActivity()).getApplication();
 
         mPhotos = PhotoManager.get().getPhotos();
         mPhotoRequester = new PhotoRequester(getActivity(), mApp, this);
@@ -62,16 +60,16 @@ public class PhotoGalleryFragment extends Fragment implements PhotoRequester.Res
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
 
-        mPhotoRecyclerView = (RecyclerView) v.findViewById(R.id.photo_recycler_view);
+      RecyclerView mPhotoRecyclerView = (RecyclerView) v.findViewById(R.id.photo_recycler_view);
         mGridLayoutManager = new GridLayoutManager(getActivity(), SPAN);
         mPhotoRecyclerView.setLayoutManager(mGridLayoutManager);
 
-        mScrollListener = new PhotoGalleryOnScrollListener(mGridLayoutManager) {
-            @Override
-            public void onLoadMore(int nPhotos, RecyclerView view) {
-                requestPhotos(nPhotos);
-            }
-        };
+      PhotoGalleryOnScrollListener mScrollListener = new PhotoGalleryOnScrollListener(mGridLayoutManager) {
+        @Override
+        public void onLoadMore(int nPhotos, RecyclerView view) {
+          requestPhotos(nPhotos);
+        }
+      };
 
         // asociate model with recycler view
 
@@ -88,7 +86,6 @@ public class PhotoGalleryFragment extends Fragment implements PhotoRequester.Res
         super.onStart();
 
         // request first photo if empty
-
         if (mPhotos.size() == 0) {
             requestPhotos(SPAN);
         }
@@ -106,8 +103,7 @@ public class PhotoGalleryFragment extends Fragment implements PhotoRequester.Res
 
     @Override
     public void receivedPhoto(final Photo photo) {
-
-        getActivity().runOnUiThread(new Runnable() {
+        Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mPhotos.add(photo);
@@ -116,5 +112,3 @@ public class PhotoGalleryFragment extends Fragment implements PhotoRequester.Res
         });
     }
 }
-
-// end of file
