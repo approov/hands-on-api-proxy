@@ -1,9 +1,7 @@
-# Hands On Mobile API Security: Get Rid of Client Secrets
-
-> **IMPORTANT:** This repository relates to Approov 1 and has not been updated to reflect the [new features](https://approov.io/docs/v2.0/changelog/) and [usage](https://approov.io/docs/v2.0/approov-usage-documentation/) of [Approov 2](https://approov.io/docs/v2.0/approov-installation/), the latest version of Approov. We will be updating the repository soon. Meanwhile, please refer to the [guide](https://approov.io/docs/v2.0/approov-usage-documentation/#migrating-from-approov-1) for migrating from Approov 1 to Approov 2.
+# Hands On Mobile API Security: Get Rid of Client Secrets
 
 
-## Introduce an API Key Proxy to Improve Mobile Security
+## Introduce an API Key Proxy to Improve Mobile Security
 
 ![NASA](images/0-4lm9DP6Xyb8PLJsL.jpg)
 
@@ -19,7 +17,7 @@ both an Android client emulation and the node server can be run together on a si
 I assume that you have some very basic familiarity with Android and can read Java and Javascript. 
 All code is provided, so it should be possible to follow along even if you have limited experience in these environments.
 
-## The Astropiks Mobile App
+## The Astropiks Mobile App
 
 The Astropiks mobile app is a relatively simple networked Android client with two main screens. 
 The initial screen displays a gallery of recent NASA picture of the day images. 
@@ -34,7 +32,7 @@ To access the service, the API requires a registered API key which will be initi
 
 To get started, you need to download the tutorial source code, get some keys, and ensure your development tools are in place. The tutorial should run properly on windows, mac, or linux environments.
 
-### 1. Download API Proxy Tutorial Source Code
+### 1. Download API Proxy Tutorial Source Code
 
 All tutorial source code is available on github. In a terminal or command window, change to a directory where you will store the tutorial, and clone this public git repository:
 
@@ -42,11 +40,11 @@ All tutorial source code is available on github. In a terminal or command window
 tutorials$ git clone https://github.com/approov/hands-on-api-proxy.git
 ```
 
-### 2. Register for an API key from NASA (it’s free)
+### 2. Register for an API key from NASA (it’s free)
 
 NASA requires a valid registration key to access their free pictures of the day service. Open a browser and visit [https://api.nasa.gov/index.html#apply-for-an-api-key](https://api.nasa.gov/index.html#apply-for-an-api-key). Complete the registration, and save your API key in a safe place.
 
-### 3. Download Attestation Demo Service Package (it’s free)
+### 3. Download Attestation Demo Service Package (it’s free)
 An attestation service is used to establish trust between client and proxy server. Open a browser and visit [https://www.approov.io/demo-reg.html](https://www.approov.io/demo-reg.html) to get access to the free demo service. Complete the registration, open your email, and unpack the zip file into a convenient place. In the sample directory tree shown, I have placed it under the same parent directory as the api-key-proxy repo.
 
 ![Repo Structure](images/tutorial-files.png)
@@ -57,20 +55,20 @@ For both client and proxy, each completed step of the tutorial is stored under t
 
 The config directory will be used shortly to pre-configure the steps with your specific keys and secrets.
 
-### 4. Setup Android Studio and SDK
+### 4. Setup Android Studio and SDK
 
 Android Studio and the Android SDK are used to build and run the Astropiks client app. Ensure Android Studio is installed and reasonably up to date, preferably version 2.3 or later. If you need a fresh install of the Android tools, go to the [Android Developers Site](https://medium.com/r/?url=https%3A%2F%2Fdeveloper.android.com%2Fstudio%2Findex.html) to get started.
 
 The tutorial presumes you will be running the client in an Android emulator, but you can also use an Android phone or tablet. The Android device should be running API 19 or higher.
 
-### 5. Setup Node.js
+### 5. Setup Node.js
 
 The Node.js environment is used to build and run the example key proxy server. Ensure the Node.js environment is installed, preferably a stable version 6 release. If you need a fresh install, visit [Node.js](https://medium.com/r/?url=https%3A%2F%2Fnodejs.org%2F) to get started. Install the [node version manager (nvm)](https://medium.com/r/?url=https%3A%2F%2Fgithub.com%2Fcreationix%2Fnvm) if you want to maintain multiple node versions.
 
 This will install Node and its package manager, npm. We’ll install additional package dependencies as we build each proxy.
 Android and Node.js environments were chosen as sample demonstration environments. Other implementations, including iOS for the client and NGINX or Go for the proxy, are certainly appropriate. If you would like to see other client or proxy implementations, add a suggestion in the responses, and I will see what can be added.
 
-### 6. Configure the Code Samples
+### 6. Configure the Code Samples
 
 The config directory contains a Node script which will help configure all the sample code steps. First change into the config directory, and install the required Node dependencies:
 
