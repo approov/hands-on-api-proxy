@@ -3,7 +3,7 @@
 buildscript {
     repositories {
         jcenter()
-      google()
+        google()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.0'
@@ -19,7 +19,7 @@ allprojects {
         google()
 
         // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
-        maven { url 'https://jitpack.io' }
+        //maven { url 'https://jitpack.io' }
     }
 }
 

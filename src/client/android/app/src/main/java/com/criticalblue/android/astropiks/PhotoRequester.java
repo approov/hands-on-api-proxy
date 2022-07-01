@@ -87,7 +87,11 @@ class PhotoRequester {
       final String date = mDateFormat.format(mCalendar.getTime());
       mCalendar.add(Calendar.DAY_OF_YEAR, -1);
 
-      final Request request = new Request.Builder().url(mRequestURL + DATE_PARAMETER + date).build();
+      String photoURL = mRequestURL + DATE_PARAMETER + date;
+
+      Log.i("ASTROPIKS_APP", "PHOTO DATA URL: " + photoURL);
+
+      final Request request = new Request.Builder().url(photoURL).build();
 
       makeRequest(request);
     }
@@ -137,6 +141,8 @@ class PhotoRequester {
                         String title = photoJSON.getJSONObject("error").getString("code");
                         String desc = photoJSON.getJSONObject("error").getString("message");
 
+                        Log.e("ASTROPIKS_APP", "error: " + desc);
+
                         mResponseListener.receivedPhoto(buildPhoto(
                           null,
                           title,
@@ -168,6 +174,8 @@ class PhotoRequester {
                         getPhoto();
                     }
                 } catch (JSONException e) {
+                     Log.e("ASTROPIKS_APP", e.toString());
+
                      // response body not expected JSON
                      mResponseListener.receivedPhoto(buildPhoto(
                        null,

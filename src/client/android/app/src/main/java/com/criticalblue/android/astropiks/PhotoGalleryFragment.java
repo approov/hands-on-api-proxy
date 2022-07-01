@@ -49,7 +49,7 @@ public class PhotoGalleryFragment extends Fragment implements PhotoRequester.Res
         setRetainInstance(true);
 
         // create model and data source
-        mApp = (App) Objects.requireNonNull(getActivity()).getApplication();
+        mApp = (App) requireActivity().getApplication();
 
         mPhotos = PhotoManager.get().getPhotos();
         mPhotoRequester = new PhotoRequester(getActivity(), mApp, this);
@@ -103,7 +103,7 @@ public class PhotoGalleryFragment extends Fragment implements PhotoRequester.Res
 
     @Override
     public void receivedPhoto(final Photo photo) {
-        Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
+        requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mPhotos.add(photo);

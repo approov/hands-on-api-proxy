@@ -22,7 +22,7 @@ import com.squareup.picasso.Picasso;
 import okhttp3.OkHttpClient;
 
 // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
-// import io.approov.service.okhttp.ApproovService;
+//import io.approov.service.okhttp.ApproovService;
 
 /**
  * Represents the Astropiks application.
@@ -37,10 +37,10 @@ public class App extends Application {
         super.onCreate();
 
         // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
-        // ApproovService.initialize(getApplicationContext(), getString(R.string.approov_config));
+        //ApproovService.initialize(getApplicationContext(), getString(R.string.approov_config));
 
         // *** UNCOMMENT THE LINE BELOW FOR APPROOV RUNTIME SECRETS ***
-        // ApproovService.addSubstitutionQueryParam("api_key");
+        //ApproovService.addSubstitutionQueryParam("api_key");
     }
 
     /**
@@ -53,7 +53,7 @@ public class App extends Application {
         return new OkHttpClient.Builder().build();
 
         // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
-        // return ApproovService.getOkHttpClient();
+        //return ApproovService.getOkHttpClient();
     }
 
     /**

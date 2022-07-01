@@ -18,6 +18,8 @@ package com.criticalblue.android.astropiks;
 
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,6 +65,7 @@ public class PhotoDetailFragment extends Fragment {
 
         ImageView mImageView = (ImageView) v.findViewById(R.id.photo_image);
         String photoURL = mPhoto.getUrl();
+        Log.i("ASTROPIKS_APP", "PHOTO IMAGE URL: " + photoURL);
 
         if (photoURL != null) {
             mApp.getImageDownloader(/*mImageView.getContext()*/)

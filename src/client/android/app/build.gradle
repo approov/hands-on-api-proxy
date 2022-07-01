@@ -18,7 +18,7 @@ android {
         resValue "string", "api_url", "${properties.getProperty('api.url')}"
 
         // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
-        resValue "string", "approov_config", "${properties.getProperty('approov.config')}"
+        //resValue "string", "approov_config", "${properties.getProperty('approov.config')}"
     }
     buildTypes {
         release {
@@ -43,5 +43,5 @@ dependencies {
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
 
     // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
-    implementation 'com.github.approov:approov-service-okhttp:3.0.6'
+    //implementation 'com.github.approov:approov-service-okhttp:3.0.6'
 }

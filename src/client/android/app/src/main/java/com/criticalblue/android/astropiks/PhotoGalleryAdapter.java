@@ -21,6 +21,8 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,9 +79,12 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
 
         public void bindPhoto(Photo photo) {
             mPhoto = photo;
-            if (mPhoto.getUrl() != null) {
+            String photoURL = mPhoto.getUrl();
+            Log.i("ASTROPIKS_APP", "PHOTO IMAGE THUMBNAIL URL: " + photoURL);
+
+            if (photoURL != null) {
                 mApp.getImageDownloader()
-                        .load(mPhoto.getUrl())
+                        .load(photoURL)
                         .error(R.drawable.no_image)
                         .into(mItemImage);
             } else {
