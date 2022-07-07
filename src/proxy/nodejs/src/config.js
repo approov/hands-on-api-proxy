@@ -5,9 +5,9 @@ if (dotenv.error) {
 }
 
 const config = {
-    PROXY_PORT: dotenv.parsed.STEP_1_PROXY_PORT || undefined,
-    NASA_HOST: dotenv.parsed.NASA_HOST || undefined,
-    NASA_PROTOCOL: dotenv.parsed.NASA_PROTOCOL || undefined,
+    PROXY_PORT: dotenv.parsed.HTTP_PORT || undefined,
+    NASA_API_HOST: dotenv.parsed.NASA_API_HOST || undefined,
+    NASA_IMAGE_HOST: dotenv.parsed.NASA_IMAGE_HOST || undefined,
     NASA_API_KEY: dotenv.parsed.NASA_API_KEY || undefined,
 }
 

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-const api = require('./api/nasa');
+const nasa_api = require('./api/nasa');
+const nasa_images = require('./api/nasa-images');
 const app = require('express')();
 const config = require('./config');
 const approov = require('./approov-token-check')
@@ -22,6 +23,8 @@ const log = require('./logging')
 
 const proxyPort = config.PROXY_PORT
 const approovHeaderName = config.APPROOV_HEADER_NAME;
+
+log.debug(config)
 
 function log_request(req, res, next) {
 
@@ -43,23 +46,24 @@ app.use('*', log_request);
 // Handles request to the root entry point.
 app.get('/', (req, res) => {
   log.info('ENDPOINT: /');
-  res.status(200).send('Astropik Reverse Proxy...');
+  res.status(200).json({name: 'Astropiks Reverse Proxy'});
 });
 
 // Handles errors in the request
 app.use((err, req, res, next) => {
   log.fatalError(`Internal Server Error: ${err}`);
-  res.status(500).send('Internal Server Error');
+  res.status(500).json({error: 'Internal Server Error'});
 });
 
-app.use('/*', approov.checkApproovToken)
+app.use('/v2', approov.checkApproovToken)
 
-app.use('/*', approov.handlesApproovTokenError)
+app.use('/v2', approov.handlesApproovTokenError)
 
-app.use('/*', approov.handlesApproovTokenSuccess)
+app.use('/v2', approov.handlesApproovTokenSuccess)
 
-// preprocess all proxy requests
-api.routes(app)
+// pre-process all proxy requests
+nasa_api.routes(app)
+nasa_images.routes(app)
 
 // Starts the proxy server
 app.listen(proxyPort, (err) => {

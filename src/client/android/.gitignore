@@ -66,4 +66,5 @@ freeline_project_description.json
 # approov library (download latest from approov.io)
 **/approov/approov.aar
 
+src/client/android/.idea/deploymentTargetDropDown.xml
 # end of file

@@ -20,16 +20,12 @@ const log = require('./../logging')
 
 // load api configuration and secrets
 const config = require(`${__dirname}/../config.js`);
-const api_host = config.NASA_HOST;
-const api_protocol = config.NASA_PROTOCOL;
+const nasa_api_host = config.NASA_API_HOST;
 const nasa_api_key = config.NASA_API_KEY;
-const proxy_protocol = 'https'
-
-const apodHostname = 'apod.nasa.gov';
+const apodHostname = config.NASA_IMAGE_HOST;
 const apodRoute = '/' + apodHostname + '/apod/image/*'
-const apodDirect = api_protocol + '://' + apodHostname + '/';
+const apodDirect = 'https://' + apodHostname + '/';
 const apodDirectRe = new RegExp(apodDirect.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
-
 
 /**
  * Describes NASA API route handlers.
@@ -39,21 +35,30 @@ const apodDirectRe = new RegExp(apodDirect.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\
 function routes(app) {
 
   // proxy a picture of the day request
-  app.use(`/${api_host}`, (req, res, next) => {
+  app.use(`/:version/${nasa_api_host}`, (req, res, next) => {
     log.info('Start Processing the NASA API Request...');
+
+    let user_agent = req.headers["user-agent"]
+    log.info("USER AGENT: " + user_agent)
 
     // build redirected request
     let urlInfo = url.parse(req.url, true);
-    urlInfo.protocol = api_protocol;
-    urlInfo.host  = api_host;
+    urlInfo.protocol = 'https';
+    urlInfo.host  = nasa_api_host;
     urlInfo.query.api_key = nasa_api_key;
     delete urlInfo.search;
 
     let nasaUrl = url.format(urlInfo);
-    log.warning("URL: " + nasaUrl)
 
-    let proxyHome = proxy_protocol + '://' + req.headers.host;
-    let apodProxy = proxyHome + '/' + apodHostname + '/';
+    // When requests are serverd with traefik we use the protocol from the
+    // request header 'x-forwarded-proto', because req.protocol always return
+    // the http protocol, and when the server is online we want to use https.
+    let request_protocol = req.headers['x-forwarded-proto'] ? req.headers['x-forwarded-proto'] : req.protocol
+    let proxyHome = request_protocol + '://' + req.headers.host;
+    let apodProxy = proxyHome + '/' + req.params.version + '/' + apodHostname + '/';
+
+    log.info("NASA API URL: " + nasaUrl)
+    log.info("NASA APOD URL: " + apodProxy)
 
     // reuse most headers
     let nasaHdrs = req.headers;
@@ -64,32 +69,20 @@ function routes(app) {
     request({ url: nasaUrl, headers: nasaHdrs }, (err, proxyRes, proxyBody) => {
       if (err) {
         log.fatalError(`Internal Server Error: in NASA proxy: ${err}`);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({error: 'Internal Server Error'});
       } else {
 
         log.info("Replacing NASA apod image url in the response body...")
 
         // patch response to redirect any apod image requests through proxy
         proxyBody = proxyBody.replace(apodDirectRe, apodProxy);
-        proxyRes.headers["content-length"] = proxyBody.length.toString();
 
+        proxyRes.headers["content-length"] = proxyBody.length.toString();
         res.writeHead(proxyRes.statusCode, proxyRes.headers);
         res.write(proxyBody);
         res.end();
       }
     });
-  });
-
-  // proxy a picture of the day image download
-  app.get(apodRoute, (req, res, next) => {
-
-    let proxyUrl = api_protocol + ':/' + req.url;
-    log.warning('Processing NASA apod image request for: ' + proxyUrl);
-
-    let proxyReq = request(proxyUrl);
-
-    // pipe the image request through the proxy
-    req.pipe(proxyReq).pipe(res);
   });
 }
 
