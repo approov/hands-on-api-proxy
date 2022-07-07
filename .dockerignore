@@ -1,0 +1,6 @@
+.local/
+bin/
+src/client/
+src/proxy/nodejs/node_modules/
+npm-debug.log
+.env

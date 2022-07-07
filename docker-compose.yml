@@ -2,99 +2,129 @@ version: "2.3"
 
 services:
 
-  shell:
-    image: approov/astropik-proxy-nodejs
+  npm-install:
+    image: ${DOCKER_IMAGE:-astropiks:dev}
     build:
-      context: ./docker/build
-      dockerfile: nodejs.Dockerfile
-    working_dir: /home/node/workspace
-    env_file:
-      - ./.env
-    volumes:
-      - ./:/home/node/workspace
-    command:
-      - sh
+      context: ./
+      args:
+        NODE_TAG: "${NODE_TAG:-12-slim}"
+    command: "npm install"
     networks:
-      - astropik
       - traefik
-
-  1_open-proxy:
-    image: approov/astropik-proxy-nodejs
-    build:
-      context: ./docker/build
-      dockerfile: nodejs.Dockerfile
-    working_dir: /home/node/workspace/steps/proxy/node/1_open-proxy
-    env_file:
-      - ./.env
     volumes:
-      - ./:/home/node/workspace
+      - ./src/proxy/nodejs:/home/node/workspace
+
+  local:
+    image: ${DOCKER_IMAGE:-astropiks:local}
+    build:
+      context: ./
+      args:
+        NODE_TAG: "${NODE_TAG:-12-slim}"
+    networks:
+      - default
+    ports:
+      - ${HOST_IP:-127.0.0.1}:${HTTP_PORT:-8080}:${HTTP_PORT:-8080}
+    volumes:
+      - ./src/proxy/nodejs:/home/node/workspace
+      - ./.env:/home/node/workspace/.env
     command:
       - npm
       - start
-    ports:
-      - 127.0.0.1:${STEP_1_PROXY_PORT:? Missing STEP_1_PROXY_PORT}:${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT}
-    networks:
-      - astropik
-      - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.backend=step1.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
-      - "traefik.docker.network=traefik"
-      - "traefik.port=${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT in .env file}"
-      - "traefik.frontend.rule=Host:step1.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
 
-  2_secure-proxy:
-    image: approov/astropik-proxy-nodejs
+  # useful to run a development server online
+  dev:
+    image: ${DOCKER_IMAGE:-astropiks:dev}
     build:
-      context: ./docker/build
-      dockerfile: nodejs.Dockerfile
-    working_dir: /home/node/workspace/steps/proxy/node/2_secure-proxy
-    env_file:
-      - ./.env
-    volumes:
-      - ./:/home/node/workspace
+      context: ./
+      args:
+        NODE_TAG: "${NODE_TAG:-12-slim}"
     command:
       - npm
       - start
-    ports:
-      - 127.0.0.1:${STEP_2_PROXY_PORT:? Missing STEP_2_PROXY_PORT}:${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT}
     networks:
-      - astropik
       - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.backend=step2.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
-      - "traefik.docker.network=traefik"
-      - "traefik.port=${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT}"
-      - "traefik.frontend.rule=Host:step2.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
-
-  3_enhanced-proxy:
-    image: approov/astropik-proxy-nodejs
-    build:
-      context: ./docker/build
-      dockerfile: nodejs.Dockerfile
-    working_dir: /home/node/workspace/steps/proxy/node/3_enhanced-proxy
-    env_file:
-      - ./.env
     volumes:
-      - ./:/home/node/workspace
-    command:
-      - npm
-      - start
-    ports:
-      - 127.0.0.1:${STEP_3_PROXY_PORT:? Missing STEP_3_PROXY_PORT}:${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT}
-    networks:
-      - astropik
-      - traefik
+      - ./src/proxy/nodejs:/home/node/workspace
+      - ./.env:/home/node/workspace/.env
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=step3.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
+      - "traefik.backend=astropiks-dev${RELEASE_TAG}"
       - "traefik.docker.network=traefik"
-      - "traefik.port=${ASTROPIK_CONTAINER_HTTP_PORT:? Missing ASTROPIK_CONTAINER_HTTP_PORT}"
-      - "traefik.frontend.rule=Host:step3.${ASTROPIK_PUBLIC_DOMAIN:? Missing ASTROPIK_PUBLIC_DOMAIN}"
+      - "traefik.port=${HTTP_PORT:-8080}"
+      - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-dev.astropiks.demo.approov.io}"
+
+  # useful to test in localhost the staging, rc and prod releases
+  test:
+    image: ${DOCKER_IMAGE:-astropiks:test}
+    build:
+      context: ./
+      dockerfile: prod.Dockerfile
+      args:
+        BUILD_RELEASE_FROM: "${BUILD_RELEASE_FROM:-master}"
+    ports:
+      - ${HOST_IP:-127.0.0.1}:${HTTP_PORT:-80}:${HTTP_PORT:-80}
+    networks:
+      - default
+    volumes:
+      - ./.env:/home/node/app/.env
+
+  staging:
+    image: ${DOCKER_IMAGE:-astropiks:staging}
+    build:
+      context: ./
+      dockerfile: prod.Dockerfile
+      args:
+        BUILD_RELEASE_FROM: "${BUILD_RELEASE_FROM:-master}"
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - ./.env:/home/node/app/.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=astropiks-staging${RELEASE_TAG}"
+      - "traefik.docker.network=traefik"
+      - "traefik.port=${HTTP_PORT:-8080}"
+      - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-staging.astropiks.demo.approov.io}"
+
+  rc:
+    image: ${DOCKER_IMAGE:-astropiks:rc}
+    build:
+      context: ./
+      dockerfile: prod.Dockerfile
+      args:
+        BUILD_RELEASE_FROM: "${BUILD_RELEASE_FROM:-master}"
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - ./.env:/home/node/app/.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=astropiks-rc${RELEASE_TAG}"
+      - "traefik.docker.network=traefik"
+      - "traefik.port=${HTTP_PORT:-8080}"
+      - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-rc.astropiks.demo.approov.io}"
+
+  prod:
+    image: ${DOCKER_IMAGE:-astropiks:prod}
+    build:
+      context: ./
+      dockerfile: prod.Dockerfile
+      args:
+        BUILD_RELEASE_FROM: "${BUILD_RELEASE_FROM:-master}"
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - ./.env:/home/node/app/.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=astropiks-prod"
+      - "traefik.docker.network=traefik"
+      - "traefik.port=80"
+      - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-astropiks.demo.approov.io}"
 
 networks:
-  astropik:
-    driver: "bridge"
   traefik:
     external: true
