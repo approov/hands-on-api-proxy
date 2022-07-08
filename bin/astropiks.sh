@@ -101,21 +101,25 @@ Setup_Configuration() {
     Exit_With_Error "Missing the ${ENV_DEPLOY_FILE} file. Add it as per DEPLOYMENT.md instructions."
   fi
 
-  REMOTE_HOME="/home/${REMOTE_USER}"
-  SUB_DOMAIN="${RELEASE_ENV}${RELEASE_TAG}"
-  TRAEFIK_PUBLIC_DOMAIN=${SUB_DOMAIN}.${APP_NAME}.${SERVER_PUBLIC_DOMAIN}
-  REMOTE_APP_DIR="${REMOTE_HOME}/${APP_NAME}/${TRAEFIK_PUBLIC_DOMAIN}"
-  DOMAINS="${TRAEFIK_PUBLIC_DOMAIN}"
-  REMOTE_DOCKER_IMAGE="${TRAEFIK_PUBLIC_DOMAIN}:${DATETIME}"
-
   case "${RELEASE_ENV}" in
-    "local" | "dev" | "test" | "staging" | "rc" | "prod")
-      continue
+    "local" | "dev" | "test" | "staging" | "rc" )
+      # The public domain will look like: rc1.astropiks.demo.approov.io
+      TRAEFIK_PUBLIC_DOMAIN="${RELEASE_ENV}${RELEASE_TAG}".${APP_NAME}.${SERVER_PUBLIC_DOMAIN}
+    ;;
+
+    "prod" )
+      # The public domain will look like: astropiks.demo.approov.io
+      TRAEFIK_PUBLIC_DOMAIN=${APP_NAME}.${SERVER_PUBLIC_DOMAIN}
     ;;
 
     * )
       Exit_With_Error "Invalid value [${RELEASE_ENV}] for --env flag. Please provide one of dev, staging, rc or prod."
   esac
+
+  REMOTE_HOME="/home/${REMOTE_USER}"
+  REMOTE_APP_DIR="${REMOTE_HOME}/${APP_NAME}/${TRAEFIK_PUBLIC_DOMAIN}"
+  DOMAINS="${TRAEFIK_PUBLIC_DOMAIN}"
+  REMOTE_DOCKER_IMAGE="${TRAEFIK_PUBLIC_DOMAIN}:${DATETIME}"
 
   SETUP_CONFIG_DONE="true"
 }
