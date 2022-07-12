@@ -39,8 +39,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
-    implementation 'com.squareup.picasso:picasso:2.5.2'
-    implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
+    implementation 'com.squareup.picasso:picasso:2.8'
 
     // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
     //implementation 'com.github.approov:approov-service-okhttp:3.0.6'

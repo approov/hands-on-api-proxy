@@ -17,8 +17,11 @@
 package com.criticalblue.android.astropiks;
 
 import android.app.Application;
-import com.jakewharton.picasso.OkHttp3Downloader;
+import android.util.Log;
+
+import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
+
 import okhttp3.OkHttpClient;
 
 // *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
@@ -62,8 +65,14 @@ public class App extends Application {
      * @return an http downloader.
      */
     public Picasso getImageDownloader() {
-        return new Picasso.Builder(this)
-            .downloader(new OkHttp3Downloader(getHttpClient()))
-            .build();
+      OkHttpClient okHttpClient = getHttpClient();
+
+      return new Picasso.Builder(this).loggingEnabled(true)
+        .downloader(new OkHttp3Downloader(okHttpClient))
+        .listener((picasso, uri, exception) -> {
+          Log.w("ASTROPIKS_APP", "FAILED TO LOAD IMAGE: " + uri.toString());
+          Log.e("ASTROPIKS_APP", exception.toString());
+        })
+        .build();
     }
 }
