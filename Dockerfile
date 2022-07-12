@@ -1,4 +1,4 @@
-ARG NODE_TAG=12-slim
+ARG NODE_TAG=16-slim
 
 FROM node:${NODE_TAG}
 
@@ -11,6 +11,10 @@ ARG LOCALE_STRING="${LANGUAGE_CODE}_${COUNTRY_CODE}"
 ARG LOCALIZATION="${LOCALE_STRING}.${ENCODING}"
 
 ARG OH_MY_ZSH_THEME="bira"
+
+# For when inspecting the env on the docker container shell
+ARG RELEASE_ENV=notset
+ENV RELEASE_ENV=${RELEASE_ENV}
 
 RUN apt update && apt -y upgrade && \
     apt -y install \

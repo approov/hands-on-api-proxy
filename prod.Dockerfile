@@ -1,4 +1,4 @@
-FROM node:12-slim as Build
+FROM node:16-slim as Build
 
 ARG BUILD_RELEASE_FROM=master
 
@@ -45,7 +45,11 @@ RUN npm install && \
   npm ci --only=production
 
 
-FROM node:12-slim
+FROM node:16-slim
+
+# For when inspecting the env on the docker container shell
+ARG RELEASE_ENV=notset
+ENV RELEASE_ENV=${RELEASE_ENV}
 
 ENV USER="node"
 ENV HOME="/home/${USER}"

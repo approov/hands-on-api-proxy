@@ -16,7 +16,7 @@ Show_Help() {
 
   OPTIONS:
 
-  --env           Sets the deployment enviroment (defaults to dev):
+  --env           Sets the deployment enviroment (defaults to local):
                   $ ./astropiks --env dev
                   $ ./astropiks --env staging
                   $ ./astropiks --env rc
@@ -28,7 +28,7 @@ Show_Help() {
                   $ ./astropiks --env-type remote
 
   --from          Sets the git branch/tag for the release (defaults to master):
-                  $ ./astropiks --from master
+                  $ ./astropiks --from feature
                   $ ./astropiks --from 1.0.0
 
   --from-current  Sets the release to the current git branch/tag:
@@ -41,17 +41,23 @@ Show_Help() {
 
   COMMANDS:
 
-  copy-env        Copies the remote .env to ./.local/deploy (defaults: --env dev):
+  build           Builds the docker image for an environment (defaults: --from master):
+                  $ ./astropiks build local
+                  $ ./astropiks --from-current build dev
+                  $ ./astropiks --from feature_branch build rc
+                  $ ./astropiks --from git_tag build prod
+
+  copy-env        Copies the remote .env to ./.local/deploy (defaults: --env local):
                   $ ./astropiks copy-env
                   $ ./astropiks --env staging copy-env
                   $ ./astropiks --env prod copy-env
 
-  update-env      Updates the local env deploy file from the .env remote file (defaults: --env dev):
+  update-env      Updates the local env deploy file from the .env remote file (defaults: --env local):
                   $ ./astropiks update-env
                   $ ./astropiks --env staging update-env
                   $ ./astropiks --env prod update-env
 
-  deploy          Deploys a release (defaults: --env dev, --env-type remote, --from master):
+  deploy          Deploys a release (defaults: --env local, --env-type remote, --from master):
                   $ ./astropiks --from-current deploy
                   $ ./astropiks --env staging --from branch-name deploy
                   $ ./astropiks --env staging --env-type remote --from branch-name deploy
@@ -64,15 +70,23 @@ Show_Help() {
 
   down            Shutdown the Server for the given environment:
                   $ ./astropiks down dev
+                  $ ./astropiks down tes
                   $ ./astropiks down staging
+                  $ ./astropiks down rc
 
   up              Boots the Server for the given environment:
                   $ ./astropiks up dev
+                  $ ./astropiks up test
                   $ ./astropiks up staging
+                  $ ./astropiks up rc
 
   rsync           Synchronizes the source code with the remote env:
                   $ ./astropiks --env dev rsync
                   $ ./astropiks --env dev --release-tag 1 rsync
+
+  shell           Starts a container with a shell for an environment (defaults: --env local):
+                  $ ./astropiks shell
+                  $ ./astropiks --env rc shell
 
 EOF
 }
@@ -90,11 +104,13 @@ Setup_Configuration() {
 
   if [ -f "${ENV_DEPLOY_FILE}" ]; then
     local tag=${RELEASE_TAG}
+    local branch=${BUILD_RELEASE_FROM}
 
     . "./${ENV_DEPLOY_FILE}"
 
     # Fixes the option --release-tag being overridden by the one in ENV_DEPLOY_FILE
     RELEASE_TAG="${tag}"
+    BUILD_RELEASE_FROM="${branch}"
 
     [ -z ${REMOTE_USER:-} ] && Exit_With_Error "REMOTE_USER - ${ENV_ERROR}"
   else
@@ -124,13 +140,35 @@ Setup_Configuration() {
   SETUP_CONFIG_DONE="true"
 }
 
+Npm_Install_Local_Server() {
+  if [ ! -d "./src/proxy/nodejs/node_modules" ]; then
+    sudo docker-compose run --rm local sh -c 'npm install && exit || exit'
+  fi
+}
+
 Run_Local_Server() {
+  Npm_Install_Local_Server
+  sudo docker-compose up local
+}
 
-    if [ ! -d "./src/proxy/nodejs/node_modules" ]; then
-        sudo docker-compose run --rm local sh -c 'npm install && exit || exit'
-    fi
+Container_Shell() {
 
-    sudo docker-compose up local
+  local shell_name="bash"
+
+  case "${RELEASE_ENV}" in
+    "local" | "dev" )
+      shell_name=zsh
+      Npm_Install_Local_Server
+    ;;
+  esac
+
+  sudo docker-compose run --rm --service-ports ${RELEASE_ENV} ${shell_name}
+}
+
+Run_Local_Test_Server() {
+  RELEASE_ENV="test"
+  Build_Release
+  sudo docker-compose up test
 }
 
 SSH_Remote_Execute() {
@@ -182,25 +220,6 @@ SCP_Copy_To_Remote() {
     "${REMOTE_USER}"@"${REMOTE_ADDRESS}":"${REMOTE_APP_DIR}/${to_file}"
 }
 
-# Docker_Build_Release() {
-#   sudo docker-compose build \
-#     --no-cache \
-#     --build-arg "BUILD_RELEASE_FROM=${BUILD_RELEASE_FROM}" \
-#     "${RELEASE_ENV}"
-# }
-
-# SSH_Remote_Docker_Load() {
-#   printf "\n---> Loading the docker image ${REMOTE_DOCKER_IMAGE} to ${REMOTE_USER}@${REMOTE_ADDRESS}:${REMOTE_PORT}\n"
-
-#   sudo docker tag "astropiks:${RELEASE_ENV}" "${REMOTE_DOCKER_IMAGE}"
-
-#   sudo docker \
-#     save "${REMOTE_DOCKER_IMAGE}" | gzip -6 | \
-#     ssh \
-#       -p "${REMOTE_PORT}" "${REMOTE_USER}"@"${REMOTE_ADDRESS}" \
-#       "gzip -d | sudo docker load"
-# }
-
 Tail_Remote_Logs() {
   Setup_Configuration
 
@@ -208,11 +227,18 @@ Tail_Remote_Logs() {
 }
 
 Boot_Remote_Server() {
-  local shutdown_env="${1:-}"
+  RELEASE_ENV="${1:-}"
 
-  case "${shutdown_env}" in
+  case "${RELEASE_ENV}" in
+    "local" )
+      Run_Local_Server
+    ;;
+
+    "test" )
+      Run_Local_Test_Server
+    ;;
+
     "dev" | "staging" | "rc" )
-      RELEASE_ENV=${shutdown_env}
       Setup_Configuration
       SSH_Remote_Execute "cd ${REMOTE_APP_DIR} && sudo docker-compose up --detach ${RELEASE_ENV}"
     ;;
@@ -222,7 +248,7 @@ Boot_Remote_Server() {
     ;;
 
     * )
-      Exit_With_Error "You can only boot the Server for dev or staging environments."
+      Exit_With_Error "You can only boot the Server for dev, staging or rc environments."
   esac
 }
 
@@ -230,6 +256,10 @@ Shutdown_Remote_Server() {
   local shutdown_env="${1:-}"
 
   case "${shutdown_env}" in
+    "local" )
+      sudo docker-compose down
+    ;;
+
     "dev" | "staging" | "rc" )
       RELEASE_ENV=${shutdown_env}
       Setup_Configuration
@@ -241,7 +271,7 @@ Shutdown_Remote_Server() {
     ;;
 
     * )
-      Exit_With_Error "You can only shutdown the Server for dev or staging environments."
+      Exit_With_Error "You can only shutdown the Server for dev, staging or rc environments."
   esac
 }
 
@@ -259,10 +289,17 @@ Rsync_To_Remote() {
     src "${REMOTE_USER}"@"${REMOTE_ADDRESS}":"${REMOTE_APP_DIR}"
 }
 
+Build_Release() {
+  local env="${1:-$RELEASE_ENV}"
+
+  sudo docker-compose build \
+    --no-cache \
+    --build-arg "BUILD_RELEASE_FROM=${BUILD_RELEASE_FROM}" \
+    "${env}"
+}
+
 Deploy_Release() {
   Setup_Configuration
-
-  # Docker_Build_Release
 
   echo "\n\n------------------ DEPLOYING TO: ${REMOTE_APP_DIR} ------------------\n\n"
 
@@ -406,6 +443,12 @@ Main() {
         exit $?
       ;;
 
+      build )
+        shift 1
+        Build_Release "${1}"
+        exit $?
+      ;;
+
       copy-env )
         shift 1
         Copy_From_Remote ".env"
@@ -429,13 +472,13 @@ Main() {
 
       down )
         shift 1
-        Shutdown_Remote_Server "${@}"
+        Shutdown_Remote_Server "${1}"
         exit $?
       ;;
 
       up )
         shift 1
-        Boot_Remote_Server "${@}"
+        Boot_Remote_Server "${1}"
         exit $?
       ;;
 
@@ -447,6 +490,12 @@ Main() {
 
       rsync )
         Rsync_To_Remote
+        exit $?
+      ;;
+
+      shell )
+        shift 1
+        Container_Shell
         exit $?
       ;;
 

@@ -3,11 +3,12 @@ version: "2.3"
 services:
 
   npm-install:
-    image: ${DOCKER_IMAGE:-astropiks:dev}
+    image: ${DOCKER_IMAGE:-astropiks:npm-install}
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-12-slim}"
+        NODE_TAG: "${NODE_TAG:-16-slim}"
+        RELEASE_ENV: "npm-install"
     command: "npm install"
     networks:
       - traefik
@@ -19,7 +20,8 @@ services:
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-12-slim}"
+        NODE_TAG: "${NODE_TAG:-16-slim}"
+        RELEASE_ENV: "local"
     networks:
       - default
     ports:
@@ -37,7 +39,8 @@ services:
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-12-slim}"
+        NODE_TAG: "${NODE_TAG:-16-slim}"
+        RELEASE_ENV: "dev"
     command:
       - npm
       - start
@@ -48,7 +51,7 @@ services:
       - ./.env:/home/node/workspace/.env
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=astropiks-dev${RELEASE_TAG}"
+      - "traefik.backend=astropiks-dev${RELEASE_TAG:-}"
       - "traefik.docker.network=traefik"
       - "traefik.port=${HTTP_PORT:-8080}"
       - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-dev.astropiks.demo.approov.io}"
@@ -60,6 +63,7 @@ services:
       context: ./
       dockerfile: prod.Dockerfile
       args:
+        RELEASE_ENV: "test"
         BUILD_RELEASE_FROM: "${BUILD_RELEASE_FROM:-master}"
     ports:
       - ${HOST_IP:-127.0.0.1}:${HTTP_PORT:-80}:${HTTP_PORT:-80}
@@ -74,6 +78,7 @@ services:
       context: ./
       dockerfile: prod.Dockerfile
       args:
+        RELEASE_ENV: "staging"
         BUILD_RELEASE_FROM: "${BUILD_RELEASE_FROM:-master}"
     restart: unless-stopped
     networks:
@@ -82,7 +87,7 @@ services:
       - ./.env:/home/node/app/.env
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=astropiks-staging${RELEASE_TAG}"
+      - "traefik.backend=astropiks-staging${RELEASE_TAG:-}"
       - "traefik.docker.network=traefik"
       - "traefik.port=${HTTP_PORT:-8080}"
       - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-staging.astropiks.demo.approov.io}"
@@ -93,6 +98,7 @@ services:
       context: ./
       dockerfile: prod.Dockerfile
       args:
+        RELEASE_ENV: "rc"
         BUILD_RELEASE_FROM: "${BUILD_RELEASE_FROM:-master}"
     restart: unless-stopped
     networks:
@@ -101,7 +107,7 @@ services:
       - ./.env:/home/node/app/.env
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=astropiks-rc${RELEASE_TAG}"
+      - "traefik.backend=astropiks-rc${RELEASE_TAG:-}"
       - "traefik.docker.network=traefik"
       - "traefik.port=${HTTP_PORT:-8080}"
       - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-rc.astropiks.demo.approov.io}"
@@ -112,6 +118,7 @@ services:
       context: ./
       dockerfile: prod.Dockerfile
       args:
+        RELEASE_ENV: "prod"
         BUILD_RELEASE_FROM: "${BUILD_RELEASE_FROM:-master}"
     restart: unless-stopped
     networks:

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const jwt = require('express-jwt')
+const { expressjwt: jwt } = require('express-jwt');
 const crypto = require('crypto')
 const config = require('./approov-config')
 const log = require('./logging')
