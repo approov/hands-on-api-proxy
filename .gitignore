@@ -14,7 +14,7 @@ token-secret.txt
 # mac
 .DS_Store
 
-# end of file
+.idea/
 
 caches/
 
