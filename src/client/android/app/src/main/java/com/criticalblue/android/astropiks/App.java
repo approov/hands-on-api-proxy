@@ -67,7 +67,7 @@ public class App extends Application {
     public Picasso getImageDownloader() {
       OkHttpClient okHttpClient = getHttpClient();
 
-      return new Picasso.Builder(this).loggingEnabled(true)
+      return new Picasso.Builder(this)
         .downloader(new OkHttp3Downloader(okHttpClient))
         .listener((picasso, uri, exception) -> {
           Log.w("ASTROPIKS_APP", "FAILED TO LOAD IMAGE: " + uri.toString());
