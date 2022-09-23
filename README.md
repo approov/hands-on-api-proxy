@@ -1,115 +1,83 @@
 # Hands On Mobile API Security: Get Rid of Client Secrets
 
+[Approov](https://approov.io) is an API security solution used to verify that requests received by your backend services originate from trusted versions of your mobile apps.
 
-## Introduce an API Key Proxy to Improve Mobile Security
+## The Articles
 
-![NASA](images/0-4lm9DP6Xyb8PLJsL.jpg)
+This repository is part of the following articles:
 
-API keys and other secrets poorly hidden inside mobile apps are a common source of mobile insecurity. You can do better.
+* [Hands on Mobile API Security - Using a Proxy to Protect API Keys](https://approov.io/blog/hands-on-mobile-api-security-using-a-proxy-to-protect-api-keys)
+* [Hands-on Mobile App and API Security - Runtime Secrets Protection](https://approov.io/blog/hands-on-mobile-app-and-api-security-runtime-secrets-protection)
 
-In this tutorial, you will work with a simple photo client which uses an API key to access the NASA picture of the day service. 
-An API Proxy introduced between your client and the picture service will remove the need for storing and protecting the API key on the client. 
-In addition to improved security, this approach offers some benefits in manageability and scalability.
+### Hands on Mobile API Security - Using a Proxy to Protect API Keys
 
-During the tutorial, you will modify an Android client and Node.js proxy server. For demonstration purposes, 
-both an Android client emulation and the node server can be run together on a single laptop.
+Quoted from the article introduction:
 
-I assume that you have some very basic familiarity with Android and can read Java and Javascript. 
-All code is provided, so it should be possible to follow along even if you have limited experience in these environments.
+> In this tutorial, you will work with a simple photo client which uses an API key to access the NASA picture of the day service. An API Reverse Proxy introduced between your client and the NASA picture service will remove the need for storing and protecting the API key on the mobile app. In addition to improved API security, this approach offers some benefits in manageability and scalability.
+>
+> During the tutorial, you will modify an Android mobile app and a NodeJS API reverse proxy server. For demonstration purposes, both the Android mobile app and the API reverse proxy server can be run together on a single laptop, but to make it easier for you to follow along we will provide an online API reverve proxy server.
+>
+> I assume that you have some very basic familiarity with Android and can read Java and Javascript. All code is provided, so it should be possible to follow along even if you have limited experience in these environments.
 
-## The Astropiks Mobile App
+### Hands-on Mobile App and API Security - Runtime Secrets Protection
 
-The Astropiks mobile app is a relatively simple networked Android client with two main screens. 
-The initial screen displays a gallery of recent NASA picture of the day images. 
-Clicking on an image brings up a detailed screen containing the full image and its description.
+Quoted from the article introduction:
 
-![Gallery and Detail Screens](images/gallery-detail-pair.png)
+> In a previous article we saw how to protect API keys by using Mobile App Attestation and delegating the API requests to a Proxy. This blog post will cover the situation where you can’t delegate the API requests to the Proxy, but where you want to remove the API keys (secrets) from being hard-coded in your mobile app to mitigate against the use of static binary analysis and/or runtime instrumentation techniques to extract those secrets.
+>
+> We will show how to have your secrets dynamically delivered to genuine and unmodified versions of your mobile app, that are not under attack, by using Mobile App Attestation to secure the just-in-time runtime secret delivery. We will demonstrate how to achieve this with the same Astropiks mobile app from the previous article. The app uses NASA's picture of the day API to retrieve images and descriptions, which requires a registered API key that will be initially hard-coded into the app.
 
-The app uses NASA’s picture of the day API to retrieve images and descriptions. 
-To access the service, the API requires a registered API key which will be initially stored in the client app.
 
-## Preliminary Setup
+## Approov Mobile App Attestation and API Security
 
-To get started, you need to download the tutorial source code, get some keys, and ensure your development tools are in place. The tutorial should run properly on windows, mac, or linux environments.
 
-### 1. Download API Proxy Tutorial Source Code
+### Why?
 
-All tutorial source code is available on github. In a terminal or command window, change to a directory where you will store the tutorial, and clone this public git repository:
+You can learn more about Approov, the motives for adopting it, and more detail on how it works by following this [link](https://approov.io/product). In brief, Approov:
 
-```
-tutorials$ git clone https://github.com/approov/hands-on-api-proxy.git
-```
+* Ensures that accesses to your API come from official versions of your apps; it blocks accesses from republished, modified, or tampered versions
+* Protects the sensitive data behind your API; it prevents direct API abuse from bots or scripts scraping data and other malicious activity
+* Secures the communication channel between your app and your API with [Approov Dynamic Certificate Pinning](https://approov.io/docs/latest/approov-usage-documentation/#approov-dynamic-pinning). This has all the benefits of traditional pinning but without the drawbacks
+* Removes the need for an API key in the mobile app
+* Provides DoS protection against targeted attacks that aim to exhaust the API server resources to prevent real users from reaching the service or to at least degrade the user experience.
 
-### 2. Register for an API key from NASA (it’s free)
 
-NASA requires a valid registration key to access their free pictures of the day service. Open a browser and visit [https://api.nasa.gov/index.html#apply-for-an-api-key](https://api.nasa.gov/index.html#apply-for-an-api-key). Complete the registration, and save your API key in a safe place.
+### How it works?
 
-### 3. Download Attestation Demo Service Package (it’s free)
-An attestation service is used to establish trust between client and proxy server. Open a browser and visit [https://www.approov.io/demo-reg.html](https://www.approov.io/demo-reg.html) to get access to the free demo service. Complete the registration, open your email, and unpack the zip file into a convenient place. In the sample directory tree shown, I have placed it under the same parent directory as the api-key-proxy repo.
+This is a brief overview of how the Approov Mobile App Attestation service and the API backend server fit together from a backend perspective. For a complete overview of how the mobile app and backend fit together with the Approov Mobile App Attestation service and the Approov SDK we recommend to read the [Approov overview](https://approov.io/product) page on our website.
 
-![Repo Structure](images/tutorial-files.png)
+#### Approov Mobile App Attestation Service
 
-During the tutorial, you will be making changes to the mobile client and the api key proxy. A working directory, pen has been created for you which holds starting copies of the client app and the API key proxy.
+The Approov Mobile App Attestation service attests that a device is running a legitimate and tamper-free version of your mobile app.
 
-For both client and proxy, each completed step of the tutorial is stored under the steps directory. You can copy any of these into your working directory if you want to start at some intermediate point.
+* If the integrity check passes then a valid token is returned to the mobile app
+* If the integrity check fails then a legitimate looking token will be returned
 
-The config directory will be used shortly to pre-configure the steps with your specific keys and secrets.
+In either case, the app, unaware of the token's validity, adds it to every request it makes to the Approov protected API(s).
 
-### 4. Setup Android Studio and SDK
+#### The API backend server
 
-Android Studio and the Android SDK are used to build and run the Astropiks client app. Ensure Android Studio is installed and reasonably up to date, preferably version 2.3 or later. If you need a fresh install of the Android tools, go to the [Android Developers Site](https://medium.com/r/?url=https%3A%2F%2Fdeveloper.android.com%2Fstudio%2Findex.html) to get started.
+The API backend server ensures that the token supplied in the `Approov-Token` header is present and valid. The validation is done by using a shared secret known only to the Approov Mobile App Attestation service and the API backend server.
 
-The tutorial presumes you will be running the client in an Android emulator, but you can also use an Android phone or tablet. The Android device should be running API 19 or higher.
+The request is handled such that:
 
-### 5. Setup Node.js
+* If the Approov Token is valid, the request is allowed to be processed by the API endpoint
+* If the Approov Token is invalid, an HTTP 401 Unauthorized response is returned
 
-The Node.js environment is used to build and run the example key proxy server. Ensure the Node.js environment is installed, preferably a stable version 6 release. If you need a fresh install, visit [Node.js](https://medium.com/r/?url=https%3A%2F%2Fnodejs.org%2F) to get started. Install the [node version manager (nvm)](https://medium.com/r/?url=https%3A%2F%2Fgithub.com%2Fcreationix%2Fnvm) if you want to maintain multiple node versions.
+You can choose to log JWT verification failures, but we left it out on purpose so that you can have the choice of how you prefer to do it and decide the right amount of information you want to log.
 
-This will install Node and its package manager, npm. We’ll install additional package dependencies as we build each proxy.
-Android and Node.js environments were chosen as sample demonstration environments. Other implementations, including iOS for the client and NGINX or Go for the proxy, are certainly appropriate. If you would like to see other client or proxy implementations, add a suggestion in the responses, and I will see what can be added.
 
-### 6. Configure the Code Samples
+## Useful Links
 
-The config directory contains a Node script which will help configure all the sample code steps. First change into the config directory, and install the required Node dependencies:
+If you wish to explore the Approov solution in more depth, then why not try one of the following links as a jumping off point:
 
-```
-tutorials$ cd api-key-proxy/config
-tutorials/api-key-proxy/config$ npm install
-```
-
-Next copy the sample secrets config file, secrets.sample.yaml, into secrets.yaml, and open it for editing:
-tutorials/api-key-proxy/config$ cp secrets.sample.yaml secrets.yaml
-
-```
-# API Key Proxy Secrets Configuration
-
-# specify a fully qualified proxy home url, for example, http://10.0.2.2:8080
-proxy_home:           'http://10.0.2.2:8080'
-
-# specify api key string received from NASA
-nasa_api_key:         'NASA_API_KEY_VALUE'
-
-# specify approov token secret as a base64 string extracted from approov demo 
-approov_token_secret: 'APPROOV_TOKEN_SECRET_VALUE'
-
-# specifiy location of approov android library (approov.aar) extracted from approov demo
-approov_android_lib:  '../../demo/libraries/android/approov.aar'
-```
-
-Set proxy_home to be a fully qualified URL address and protocol. If you will be running the Android client in an emulator and the proxy server locally, use http: as the protocol and 10.0.2.2 as the address (the emulator’s default tunnel to localhost), and select an unused localhost port, 8080 in the sample file.
-
-Change the nasa_api_key and approov_token_secret values to match the NASA API key you received and the Approov token secret you obtained in the demo download. Point approov_android_lib to the location of the approov.aar file inside the demo download. Save secrets.yaml, and run the configuration script:
-
-```
-tutorials/api-key-proxy/config$ npm start
-```
-
-If the configuration was correct, all client and proxy steps now hold a consistent set of config and secret values, the approov demo service SDK library has been added to the relevant client steps, and the proxy URL has been set for both clients and proxies.
-
-The pen working directory contains copies of the  starting configurations, 0_direct_client and 1_open_proxy. You should be good to go.
-
-## Additional Instructions
-
-Indiviudal client and server READMEs contain additional information.
-
-**Follow the tutorial article for more complete instructions and walkthrough of the client and proxy development!**
+* [Approov Free Trial](https://approov.io/signup)(no credit card needed)
+* [Approov Get Started](https://approov.io/product/demo)
+* [Approov QuickStarts](https://approov.io/docs/latest/approov-integration-examples/)
+* [Approov Docs](https://approov.io/docs)
+* [Approov Blog](https://approov.io/blog/)
+* [Approov Resources](https://approov.io/resource/)
+* [Approov Customer Stories](https://approov.io/customer)
+* [Approov Support](https://approov.io/contact)
+* [About Us](https://approov.io/company)
+* [Contact Us](https://approov.io/contact)

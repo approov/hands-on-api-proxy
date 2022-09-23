@@ -14,8 +14,11 @@ token-secret.txt
 # mac
 .DS_Store
 
-# end of file
+.idea/
 
 caches/
 
-.env
+.env*
+!.env.example
+!.env.deploy.example
+!.env.sample

@@ -1,0 +1,29 @@
+{
+  "name": "astropiks-proxy-server",
+  "version": "1.0.0",
+  "description": "Node server which proxies requests for mobile applications",
+  "author": "Skip Hovsmith",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "build": "babel src -d dist --ignore \"**/*.test.js\"",
+    "clean": "rimraf ./dist && mkdir dist",
+    "serve": "node dist/index.js"
+  },
+  "main": "src/index.js",
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-jwt": "^7.7.5",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.18.6",
+    "@babel/core": "^7.18.6",
+    "@babel/preset-env": "^7.18.6",
+    "nodemon": "^2.0.19",
+    "rimraf": "^3.0.0"
+  }
+}
