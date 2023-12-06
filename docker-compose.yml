@@ -7,7 +7,7 @@ services:
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-16-slim}"
+        NODE_TAG: "${NODE_TAG:-18-slim}"
         RELEASE_ENV: "npm-install"
     command: "npm install"
     networks:
@@ -20,7 +20,7 @@ services:
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-16-slim}"
+        NODE_TAG: "${NODE_TAG:-18-slim}"
         RELEASE_ENV: "local"
     networks:
       - default
@@ -39,7 +39,7 @@ services:
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-16-slim}"
+        NODE_TAG: "${NODE_TAG:-18-slim}"
         RELEASE_ENV: "dev"
     command:
       - npm

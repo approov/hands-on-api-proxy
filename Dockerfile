@@ -1,4 +1,4 @@
-ARG NODE_TAG=16-slim
+ARG NODE_TAG=18-slim
 
 FROM node:${NODE_TAG}
 
