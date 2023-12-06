@@ -3,11 +3,11 @@ version: "2.3"
 services:
 
   npm-install:
-    image: ${DOCKER_IMAGE:-astropiks:npm-install}
+    image: ${DOCKER_IMAGE:-approov/astropiks:npm-install}
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-16-slim}"
+        NODE_TAG: "${NODE_TAG:-18-slim}"
         RELEASE_ENV: "npm-install"
     command: "npm install"
     networks:
@@ -16,11 +16,11 @@ services:
       - ./src/proxy/nodejs:/home/node/workspace
 
   local:
-    image: ${DOCKER_IMAGE:-astropiks:local}
+    image: ${DOCKER_IMAGE:-approov/astropiks:local}
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-16-slim}"
+        NODE_TAG: "${NODE_TAG:-18-slim}"
         RELEASE_ENV: "local"
     networks:
       - default
@@ -35,11 +35,11 @@ services:
 
   # useful to run a development server online
   dev:
-    image: ${DOCKER_IMAGE:-astropiks:dev}
+    image: ${DOCKER_IMAGE:-approov/astropiks:dev}
     build:
       context: ./
       args:
-        NODE_TAG: "${NODE_TAG:-16-slim}"
+        NODE_TAG: "${NODE_TAG:-18-slim}"
         RELEASE_ENV: "dev"
     command:
       - npm
@@ -58,7 +58,7 @@ services:
 
   # useful to test in localhost the staging, rc and prod releases
   test:
-    image: ${DOCKER_IMAGE:-astropiks:test}
+    image: ${DOCKER_IMAGE:-approov/astropiks:test}
     build:
       context: ./
       dockerfile: prod.Dockerfile
@@ -73,7 +73,7 @@ services:
       - ./.env:/home/node/app/.env
 
   staging:
-    image: ${DOCKER_IMAGE:-astropiks:staging}
+    image: ${DOCKER_IMAGE:-approov/astropiks:staging}
     build:
       context: ./
       dockerfile: prod.Dockerfile
@@ -93,7 +93,7 @@ services:
       - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-staging.astropiks.demo.approov.io}"
 
   rc:
-    image: ${DOCKER_IMAGE:-astropiks:rc}
+    image: ${DOCKER_IMAGE:-approov/astropiks:rc}
     build:
       context: ./
       dockerfile: prod.Dockerfile
@@ -113,7 +113,7 @@ services:
       - "traefik.frontend.rule=Host:${PUBLIC_DOMAINS:-rc.astropiks.demo.approov.io}"
 
   prod:
-    image: ${DOCKER_IMAGE:-astropiks:prod}
+    image: ${DOCKER_IMAGE:-approov/astropiks}
     build:
       context: ./
       dockerfile: prod.Dockerfile

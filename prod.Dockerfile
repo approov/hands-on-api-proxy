@@ -1,4 +1,6 @@
-FROM node:16-slim as Build
+ARG NODE_TAG=18-slim
+
+FROM node:${NODE_TAG} as Build
 
 ARG BUILD_RELEASE_FROM=master
 
@@ -45,7 +47,7 @@ RUN npm install && \
   npm ci --only=production
 
 
-FROM node:16-slim
+FROM node:${NODE_TAG}
 
 # For when inspecting the env on the docker container shell
 ARG RELEASE_ENV=notset
