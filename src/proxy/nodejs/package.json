@@ -15,7 +15,7 @@
   "dependencies": {
     "chalk": "^3.0.0",
     "dotenv": "^16.0.1",
-    "express": "^4.18.1",
+    "express": "^4.19.2",
     "express-jwt": "^8.2.0",
     "request": "^2.88.2"
   },
